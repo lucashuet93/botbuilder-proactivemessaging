@@ -7,7 +7,7 @@ const restify = require('restify');
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-const { BotFrameworkAdapter } = require('botbuilder');
+const { BotFrameworkAdapter, ConversationState, MemoryStorage } = require('botbuilder');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
@@ -31,10 +31,12 @@ const BOT_CONFIGURATION = (process.env.NODE_ENV || DEV_ENVIRONMENT);
 // Create HTTP server
 const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
-    console.log(`\n${ server.name } listening to ${ server.url }`);
+    console.log(`\n${server.name} listening to ${server.url}`);
     console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
     console.log(`\nTo talk to your bot, open basic.bot file in the Emulator`);
 });
+// add body parser
+server.use(restify.plugins.bodyParser());
 
 // .bot file path
 const BOT_FILE = path.join(__dirname, (process.env.botFilePath || ''));
@@ -64,18 +66,32 @@ const adapter = new BotFrameworkAdapter({
 // Catch-all for errors.
 adapter.onTurnError = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
-    console.error(`\n [onTurnError]: ${ error }`);
+    console.error(`\n [onTurnError]: ${error}`);
     // Send a message to the user
     await context.sendActivity(`Oops. Something went wrong!`);
 };
 
+// Introduce state
+const memoryStorage = new MemoryStorage();
+const conversationState = new ConversationState(memoryStorage);
+
 // Create the main dialog.
-const myBot = new MyBot();
+const myBot = new MyBot(conversationState);
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {
     adapter.processActivity(req, res, async (context) => {
         // Route to main dialog.
         await myBot.onTurn(context);
+    });
+});
+
+// add proactive endpoint
+server.post('/api/proactive', async (req, res) => {
+    console.log(req.body);
+    let reference = req.body.reference;
+    let message = req.body.message;
+    await adapter.continueConversation(reference, async (turnContext) => {
+        await turnContext.sendActivity(message);
     });
 });

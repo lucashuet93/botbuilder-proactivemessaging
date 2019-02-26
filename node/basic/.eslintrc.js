@@ -8,7 +8,6 @@ module.exports = {
       "named": "never",
       "anonymous": "never",
       "asyncArrow": "always"
-    }],
-    "template-curly-spacing": [2, "always"]
+    }]
   }
 };

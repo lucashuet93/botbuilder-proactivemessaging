@@ -19,6 +19,8 @@
         "botbuilder": "^4.1.5",
         "botframework-config": "^4.1.5",
         "dotenv": "^6.1.0",
+        "es6-promise": "^4.2.6",
+        "isomorphic-fetch": "^2.2.1",
         "restify": "^7.2.3"
     },
     "devDependencies": {
