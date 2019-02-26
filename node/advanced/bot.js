@@ -1,16 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-const { ActivityTypes, TurnContext } = require('botbuilder');
+const { ActivityTypes } = require('botbuilder');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 
-const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
-
 class MyBot {
-    constructor(conversationState) {
-        this.conversationState = conversationState;
-        this.conversationReference = this.conversationState.createProperty(CONVERSATION_REFERENCE);
+    constructor(conversationStorageService) {
+        this.conversationStorageService = conversationStorageService;
     }
 
     async onTurn(turnContext) {
@@ -29,24 +26,18 @@ class MyBot {
                 for (let idx in turnContext.activity.membersAdded) {
                     if (turnContext.activity.membersAdded[idx].id !== turnContext.activity.recipient.id) {
                         // store the conversation reference for the newly added user
-                        await this.storeConversationReference(turnContext);
+                        await this.conversationStorageService.storeReference(turnContext);
                     }
                 }
             }
         }
-        await this.conversationState.saveChanges(turnContext);
-    }
-
-    async storeConversationReference(turnContext) {
-        // pull the reference
-        const reference = TurnContext.getConversationReference(turnContext.activity);
-        // store reference in memory using conversation data property
-        await this.conversationReference.set(turnContext, reference);
+        await this.conversationStorageService.saveState(turnContext);
     }
 
     async triggerProactiveMessage(turnContext, message) {
         // pull the reference
-        const reference = await this.conversationReference.get(turnContext);
+        const reference = await this.conversationStorageService.restoreReference(turnContext);
+
         const postBody = { reference, message };
         const localProactiveEndpoint = 'http://localhost:3978/api/proactive';
         await turnContext.sendActivity('Proactive message incoming...');
