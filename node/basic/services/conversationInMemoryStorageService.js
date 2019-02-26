@@ -2,7 +2,7 @@ const { TurnContext, ConversationState, MemoryStorage } = require('botbuilder');
 
 const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
 
-class ConversationStorageService {
+class ConversationInMemoryStorageService {
     constructor() {
         const memoryStorage = new MemoryStorage();
         this.conversationState = new ConversationState(memoryStorage);
@@ -26,4 +26,4 @@ class ConversationStorageService {
     }
 }
 
-module.exports.ConversationStorageService = ConversationStorageService;
+module.exports.ConversationInMemoryStorageService = ConversationInMemoryStorageService;
