@@ -2,7 +2,8 @@
 // Licensed under the MIT License.
 
 const { ActivityTypes, TurnContext } = require('botbuilder');
-const fetch = require('isomorphic-fetch');
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
 const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
 
@@ -51,7 +52,7 @@ class MyBot {
         await turnContext.sendActivity('Proactive message incoming...');
         await fetch(localProactiveEndpoint, {
             method: 'POST',
-            body: postBody,
+            body: JSON.stringify(postBody),
             headers: { 'Content-Type': 'application/json' }
         });
     }
