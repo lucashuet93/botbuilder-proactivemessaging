@@ -1,5 +1,5 @@
 {
-    "name": "basic",
+    "name": "advanced",
     "services": [
         {
             "type": "endpoint",
