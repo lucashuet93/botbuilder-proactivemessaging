@@ -12,6 +12,15 @@
       ]
     },
     {
+      "name": "allDocuments",
+      "type": "documentDB",
+      "direction": "in",
+      "databaseName": "Testing",
+      "collectionName": "References",
+      "sqlQuery": "SELECT * FROM c",
+      "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
+    },
+    {
       "type": "http",
       "direction": "out",
       "name": "res"
