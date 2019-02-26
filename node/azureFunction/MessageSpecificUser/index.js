@@ -4,14 +4,13 @@ require('isomorphic-fetch');
 module.exports = function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
-    // pull all cosmos entries, each of which is a conversation reference
-    let conversationReferences = context.bindings.allDocuments;
+    // pull cosmos entry for specific user
+    let conversationReferences = context.bindings.userSpecificDocument;
 
-    // loop through cosmos entries
-    let count = 0;
-    for (let conversationReference of conversationReferences) {
-        count++;
+    // cosmos entry for given user is first value in conversationReferences array
+    if (conversationReferences.length > 0) {
         // isolate conversation reference from entry
+        let conversationReference = conversationReferences[0];
         const reference = {
             activityId: conversationReference.activityId,
             user: conversationReference.user,
@@ -20,6 +19,7 @@ module.exports = function (context, req) {
             channelId: conversationReference.channelId,
             serviceUrl: conversationReference.serviceUrl
         }
+
         // hit proactive endpoint with message and conversation reference
         const postBody = {
             reference: reference,
@@ -30,21 +30,16 @@ module.exports = function (context, req) {
             body: JSON.stringify(postBody),
             headers: { 'Content-Type': 'application/json' }
         }).then((res) => {
-            if (count === conversationReferences.length) {
-                context.res = {
-                    status: 200,
-                    body: "Users have been notified"
-                };
-                context.done();
+            context.res = {
+                status: 200,
+                body: "User has been notified"
             };
+            context.done();
         });
-    }
-    
-    // handle edge case
-    if(conversationReferences.length === 0){
+    } else {
         context.res = {
             status: 200,
-            body: "No entries found"
+            body: "No entry found"
         };
         context.done();
     }
