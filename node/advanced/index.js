@@ -8,7 +8,7 @@ const restify = require('restify');
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require('botbuilder');
-const { ConversationAzureStorageService } = require('./services/ConversationAzureStorageService');
+const { ConversationInMemoryStorageService } = require('./services/conversationInMemoryStorageService');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
@@ -34,7 +34,7 @@ const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
     console.log(`\n${server.name} listening to ${server.url}`);
     console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
-    console.log(`\nTo talk to your bot, open advanced.bot file in the Emulator`);
+    console.log(`\nTo talk to your bot, open basic.bot file in the Emulator`);
 });
 // add body parser
 server.use(restify.plugins.bodyParser());
@@ -73,7 +73,7 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Introduce state
-const conversationStorageService = new ConversationAzureStorageService();
+const conversationStorageService = new ConversationInMemoryStorageService();
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService);
