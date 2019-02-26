@@ -6,6 +6,7 @@ module.exports = function (context, req) {
 
     // pull cosmos entry for specific user
     let conversationReferences = context.bindings.userSpecificDocuments;
+    context.log(conversationReferences);
     
     // loop through cosmos entries
     let count = 0;

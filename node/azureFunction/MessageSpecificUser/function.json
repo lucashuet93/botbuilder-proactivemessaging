@@ -9,7 +9,8 @@
       "methods": [
         "get",
         "post"
-      ]
+      ],
+      "route": "MessageSpecificUser/{userid}"
     },
     {
       "name": "userSpecificDocuments",
@@ -17,7 +18,7 @@
       "direction": "in",
       "databaseName": "Testing",
       "collectionName": "References",
-      "sqlQuery": "SELECT * FROM c where c.id = '5b86f3e6-06c6-39f3-b827-d12d2d117139'",
+      "sqlQuery": "SELECT * FROM c where c.user.id = {userid}",
       "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
     },
     {
