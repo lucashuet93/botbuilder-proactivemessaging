@@ -28,6 +28,7 @@ class MyBot {
             if (turnContext.activity.membersAdded.length !== 0) {
                 for (let idx in turnContext.activity.membersAdded) {
                     if (turnContext.activity.membersAdded[idx].id !== turnContext.activity.recipient.id) {
+                        // store the conversation reference for the newly added user
                         await this.storeConversationReference(turnContext);
                     }
                 }
@@ -39,17 +40,17 @@ class MyBot {
     async storeConversationReference(turnContext) {
         // pull the reference
         const reference = TurnContext.getConversationReference(turnContext.activity);
-        let conversationReference = await this.conversationReference.get(turnContext, {});
-        conversationReference = { reference };
         // store reference in memory using conversation data property
-        await this.conversationReference.set(turnContext, conversationReference);
+        await this.conversationReference.set(turnContext, reference);
     }
 
     async triggerProactiveMessage(turnContext, message) {
-        const reference = TurnContext.getConversationReference(turnContext.activity);
+        // pull the reference
+        const reference = await this.conversationReference.get(turnContext);
         const postBody = { reference, message };
         const localProactiveEndpoint = 'http://localhost:3978/api/proactive';
         await turnContext.sendActivity('Proactive message incoming...');
+        // send the conversation reference and message to the bot's proactive endpoint
         await fetch(localProactiveEndpoint, {
             method: 'POST',
             body: JSON.stringify(postBody),
