@@ -12,7 +12,7 @@
       ]
     },
     {
-      "name": "userSpecificDocument",
+      "name": "userSpecificDocuments",
       "type": "documentDB",
       "direction": "in",
       "databaseName": "Testing",
