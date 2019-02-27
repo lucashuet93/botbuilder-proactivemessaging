@@ -12,16 +12,20 @@ class ConversationInMemoryStorageService {
 
     async storeReference(turnContext) {
         // pull the reference
-        const reference = TurnContext.getConversationReference(turnContext.activity);
+        const reference = await this.restoreReference(turnContext);
         // store reference in memory using conversation data property
         await this.conversationReference.set(turnContext, reference);
     }
 
     async restoreReference(turnContext) {
-        return await this.conversationReference.get(turnContext);
+        let reference = await this.conversationReference.get(turnContext);
+        if (reference === null || reference === undefined) {
+            reference = TurnContext.getConversationReference(turnContext.activity);
+        }
+        return reference;
     }
 
-    async saveState(turnContext) {
+    async updateState(turnContext) {
         await this.conversationState.saveChanges(turnContext);
     }
 }
