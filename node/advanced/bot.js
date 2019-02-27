@@ -38,8 +38,8 @@ class MyBot {
         // pull the reference
         const reference = TurnContext.getConversationReference(turnContext.activity);
         // store reference in cosmosDB
-        try { 
-            const { item } = await this.cosmosClient.database(config.DATABASE).container(config.COLLECTION).items.create(reference);
+        try {
+            await this.cosmosClient.database(config.DATABASE).container(config.COLLECTION).items.create(reference);
         } catch (err) {
             turnContext.sendActivity(`Write failed: ${err}`);
             console.log(err);
