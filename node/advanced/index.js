@@ -100,9 +100,9 @@ server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
     let message = `**Broadcasted**: *${req.body.message}*`;
     references.forEach(async (reference) => {
-        const localUrl = reference.serviceUrl.includes('localhost');
+        const channel = reference.channelId.includes('emulator');
         const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
-        const matchEnv = (localEnv && localUrl) || (!localEnv && !localUrl);
+        const matchEnv = (localEnv && channel) || (!localEnv && !channel);
         if (matchEnv) {
             await adapter.continueConversation(reference, async (turnContext) => {
                 try {
