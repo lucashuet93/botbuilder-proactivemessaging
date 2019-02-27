@@ -1,9 +1,9 @@
 module.exports = async function (context, req) {
-    context.log('Broadcasting message!');
+    context.log('Broadcasting the message!');
 
     // 1. extract message
-    // 2. get references from cosmosdb
-    // 3. send response with message and references
+    // 2. get conversation references from cosmosdb
+    // 3. send response with message and references list
 
     const message = req.body.message;
     const originReference = req.body.reference;
