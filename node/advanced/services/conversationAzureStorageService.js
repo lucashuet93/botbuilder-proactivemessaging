@@ -1,5 +1,5 @@
 const { TurnContext, ConversationState, MemoryStorage } = require('botbuilder');
-require('isomorphic-fetch');
+const fetch = require('isomorphic-fetch');
 
 const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
 
@@ -21,7 +21,7 @@ class ConversationAzureStorageService {
 
         await fetch(STORE_FUNCTION_ENDPOINT, {
             method: 'POST',
-            body: JSON.stringify({ reference: JSON.stringify(reference) }),
+            body: JSON.stringify({ reference }),
             headers: { 'Content-Type': 'application/json' }
         });
     }
