@@ -15,11 +15,15 @@ class MyBot {
             if (turnContext.activity.text.includes('broadcast - ')) {
                 // if user types proactive - {message}, send the message proactively
                 const message = turnContext.activity.text.split('broadcast - ')[1];
-                await this.broadcastMessage(turnContext, message);
+
+                const broadCastList = await this.getBroadcastList(turnContext, message);
+                await this.broadcastMessage(broadCastList);
             } else if (turnContext.activity.text.includes('proactive - ')) {
                 // if user types proactive - {message}, send the message proactively
                 const message = turnContext.activity.text.split('proactive - ')[1];
-                await this.triggerProactiveMessage(turnContext, message);
+
+                const broadCastList = await this.getProactiveList(turnContext, message);
+                await this.broadcastMessage(broadCastList);
             } else {
                 // otherwise, echo text back to user
                 await turnContext.sendActivity(`You said '${turnContext.activity.text}'`);
@@ -38,27 +42,34 @@ class MyBot {
         await this.conversationStorageService.updateState(turnContext);
     }
 
-    async triggerProactiveMessage(turnContext, message) {
-        // pull the reference
-        const reference = await this.conversationStorageService.restoreReference(turnContext);
-        const postBody = { reference, message };
-        const localProactiveEndpoint = 'http://localhost:3978/api/proactive';
-        await turnContext.sendActivity('Proactive message incoming...');
-        // send the conversation reference and message to the bot's proactive endpoint
-        await fetch(localProactiveEndpoint, {
+    async broadcastMessage(broadCastList) {
+        const localBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
+
+        // send messages to all the referenced conversations
+        await fetch(localBroadcastEndpoint, {
             method: 'POST',
-            body: JSON.stringify(postBody),
+            body: JSON.stringify(broadCastList),
             headers: { 'Content-Type': 'application/json' }
         });
     }
 
-    async broadcastMessage(turnContext, message) {
+    async getProactiveList(turnContext, message) {
         // pull the reference
-        const reference = await this.conversationStorageService.restoreReference(turnContext);
-        const postBody = { reference, message };
-        const broadcastEndpoint = 'https://proactive-bot-function.azurewebsites.net/api/broadcastConversation?code=ADT5RTIydqugxGMLVub3OyxzwEtYhZ16aUvkDmsrH7i5p7Fjuoj4ww==';
+        const originReference = await this.conversationStorageService.restoreReference(turnContext);
 
-        await turnContext.sendActivity('Broadcasting you message...');
+        const broadCastList = {
+            references: [originReference],
+            message
+        };
+
+        return broadCastList;
+    }
+
+    async getBroadcastList(turnContext, message) {
+        // pull the reference
+        const originReference = await this.conversationStorageService.restoreReference(turnContext);
+        const postBody = { originReference, message };
+        const broadcastEndpoint = 'https://proactive-bot-function.azurewebsites.net/api/broadcastConversation?code=ADT5RTIydqugxGMLVub3OyxzwEtYhZ16aUvkDmsrH7i5p7Fjuoj4ww==';
 
         // get broadcasting references
         const response = await fetch(broadcastEndpoint, {
@@ -67,21 +78,7 @@ class MyBot {
             headers: { 'Content-Type': 'application/json' }
         });
 
-        const responseJSON = await response.json();
-
-        const localBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
-
-        const broadcastBody = {
-            references: responseJSON.references,
-            message: responseJSON.message
-        };
-
-        // send messages to all the referenced conversations
-        await fetch(localBroadcastEndpoint, {
-            method: 'POST',
-            body: JSON.stringify(broadcastBody),
-            headers: { 'Content-Type': 'application/json' }
-        });
+        return await response.json();
     }
 }
 

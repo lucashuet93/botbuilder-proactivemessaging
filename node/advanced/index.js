@@ -88,15 +88,6 @@ server.post('/api/messages', (req, res) => {
     });
 });
 
-// add proactive endpoint
-server.post('/api/proactive', async (req, res) => {
-    let reference = req.body.reference;
-    let message = `**Proactive**: *${req.body.message}*`;
-    await adapter.continueConversation(reference, async (turnContext) => {
-        await turnContext.sendActivity(message);
-    });
-});
-
 // add broadcast endpoint
 server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
