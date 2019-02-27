@@ -1,15 +1,11 @@
-const { TurnContext, ConversationState, MemoryStorage } = require('botbuilder');
+const { TurnContext } = require('botbuilder');
 const fetch = require('isomorphic-fetch');
+const { ConversationInMemoryStorageService } = require('ConversationInMemoryStorageService');
 
-const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
-
-class ConversationAzureStorageService {
+class ConversationAzureStorageService extends ConversationInMemoryStorageService {
     constructor(storageServiceEndpoint) {
+        super();
         this.storageServiceEndpoint = storageServiceEndpoint;
-        const memoryStorage = new MemoryStorage();
-        this.conversationState = new ConversationState(memoryStorage);
-
-        this.conversationReference = this.conversationState.createProperty(CONVERSATION_REFERENCE);
     }
 
     async storeReference(turnContext) {

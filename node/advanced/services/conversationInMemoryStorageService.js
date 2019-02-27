@@ -16,18 +16,6 @@ class ConversationInMemoryStorageService {
         // store reference in memory using conversation data property
         await this.conversationReference.set(turnContext, reference);
     }
-
-    async restoreReference(turnContext) {
-        let reference = await this.conversationReference.get(turnContext);
-        if (reference === null || reference === undefined) {
-            reference = TurnContext.getConversationReference(turnContext.activity);
-        }
-        return reference;
-    }
-
-    async updateState(turnContext) {
-        await this.conversationState.saveChanges(turnContext);
-    }
 }
 
 module.exports.ConversationInMemoryStorageService = ConversationInMemoryStorageService;
