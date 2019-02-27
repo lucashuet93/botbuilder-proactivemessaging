@@ -3,10 +3,9 @@ const fetch = require('isomorphic-fetch');
 
 const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
 
-const STORE_FUNCTION_ENDPOINT = 'https://proactive-bot-function.azurewebsites.net/api/storeConversation?code=x/Q5YGZdBGlIHtoLOgu8hfjgGxTm2XYOB7TAnmzni82GRjKwikGOWA==';
-
 class ConversationAzureStorageService {
-    constructor() {
+    constructor(storageServiceEndpoint) {
+        this.storageServiceEndpoint = storageServiceEndpoint;
         const memoryStorage = new MemoryStorage();
         this.conversationState = new ConversationState(memoryStorage);
 
@@ -19,7 +18,7 @@ class ConversationAzureStorageService {
         // store reference in memory using conversation data property
         await this.conversationReference.set(turnContext, reference);
 
-        await fetch(STORE_FUNCTION_ENDPOINT, {
+        await fetch(this.storageServiceEndpoint, {
             method: 'POST',
             body: JSON.stringify({ reference }),
             headers: { 'Content-Type': 'application/json' }

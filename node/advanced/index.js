@@ -11,6 +11,8 @@ const { BotFrameworkAdapter } = require('botbuilder');
 const { ConversationAzureStorageService } = require('./services/ConversationAzureStorageService');
 // const { ConversationInMemoryStorageService } = require('./services/ConversationInMemoryStorageService');
 
+const { BroadcastAzureService } = require('./services/BroadcastAzureService');
+
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
 
@@ -74,11 +76,13 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Introduce state
-const conversationStorageService = new ConversationAzureStorageService();
+const conversationStorageService = new ConversationAzureStorageService(process.env.storageEndpoint);
 // const conversationStorageService = new ConversationInMemoryStorageService();
 
+const broadcastService = new BroadcastAzureService(process.env.broadCastEndpoint);
+
 // Create the main dialog.
-const myBot = new MyBot(conversationStorageService);
+const myBot = new MyBot(conversationStorageService, broadcastService);
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {
