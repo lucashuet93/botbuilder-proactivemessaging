@@ -1,4 +1,3 @@
-const { TurnContext } = require('botbuilder');
 const fetch = require('isomorphic-fetch');
 const { ConversationInMemoryStorageService } = require('./conversationInMemoryStorageService.js');
 
@@ -19,18 +18,6 @@ class ConversationAzureStorageService extends ConversationInMemoryStorageService
             body: JSON.stringify({ reference }),
             headers: { 'Content-Type': 'application/json' }
         });
-    }
-
-    async restoreReference(turnContext) {
-        let reference = await this.conversationReference.get(turnContext);
-        if (reference === null || reference === undefined) {
-            reference = TurnContext.getConversationReference(turnContext.activity);
-        }
-        return reference;
-    }
-
-    async updateState(turnContext) {
-        await this.conversationState.saveChanges(turnContext);
     }
 }
 
