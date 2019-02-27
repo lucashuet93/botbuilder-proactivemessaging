@@ -100,12 +100,17 @@ server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
     let message = `**Broadcasted**: *${req.body.message}*`;
     references.forEach(async (reference) => {
-        await adapter.continueConversation(reference, async (turnContext) => {
-            try {
-                await turnContext.sendActivity(message);
-            } catch (e) {
-                console.log(e);
-            }
-        });
+        const localUrl = reference.serviceUrl.includes('localhost');
+        const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
+        const matchEnv = (localEnv && localUrl) || (!localEnv && !localUrl);
+        if (matchEnv) {
+            await adapter.continueConversation(reference, async (turnContext) => {
+                try {
+                    await turnContext.sendActivity(message);
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+        }
     });
 });
