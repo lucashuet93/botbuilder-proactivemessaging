@@ -4,13 +4,12 @@ require('isomorphic-fetch');
 module.exports = function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
-    // pull cosmos entry for specific user
+    // pull cosmos entries for specific user
     let conversationReferences = context.bindings.userSpecificDocuments;
-    
+    let references = [];
+
     // loop through cosmos entries
-    let count = 0;
     for (let conversationReference of conversationReferences) {
-        count++;
         // isolate conversation reference from entry
         const reference = {
             activityId: conversationReference.activityId,
@@ -20,9 +19,13 @@ module.exports = function (context, req) {
             channelId: conversationReference.channelId,
             serviceUrl: conversationReference.serviceUrl
         }
+        references.push(reference);
+    }
+
+    if (references.length > 0) {
         // hit proactive endpoint with message and conversation reference
         const postBody = {
-            reference: reference,
+            references: references,
             message: req.body.message
         };
         fetch(process.env.ProactiveEndpoint, {
@@ -30,18 +33,13 @@ module.exports = function (context, req) {
             body: JSON.stringify(postBody),
             headers: { 'Content-Type': 'application/json' }
         }).then((res) => {
-            if (count === conversationReferences.length) {
-                context.res = {
-                    status: 200,
-                    body: "User has been notified on all channels"
-                };
-                context.done();
+            context.res = {
+                status: 200,
+                body: "User has been notified on all channels"
             };
+            context.done();
         });
-    }
-    
-    // handle edge case
-    if(conversationReferences.length === 0){
+    } else {
         context.res = {
             status: 200,
             body: "No entries found"

@@ -14,7 +14,7 @@
     },
     {
       "name": "userSpecificDocuments",
-      "type": "documentDB",
+      "type": "cosmosDB",
       "direction": "in",
       "databaseName": "YOUR_DATABASE",
       "collectionName": "YOUR_COLLECTION",

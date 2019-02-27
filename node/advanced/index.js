@@ -7,7 +7,7 @@ const restify = require('restify');
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-const { BotFrameworkAdapter, ConversationState, MemoryStorage } = require('botbuilder');
+const { BotFrameworkAdapter } = require('botbuilder');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
@@ -84,9 +84,15 @@ server.post('/api/messages', (req, res) => {
 
 // add proactive endpoint
 server.post('/api/proactive', async (req, res) => {
-    let reference = req.body.reference;
+    let references = req.body.references;
     let message = req.body.message;
-    await adapter.continueConversation(reference, async (turnContext) => {
-        await turnContext.sendActivity(message);
-    });
+    for (let reference of references) {
+        try {
+            await adapter.continueConversation(reference, async (turnContext) => {
+                await turnContext.sendActivity(message);
+            });
+        } catch (err) {
+            console.log(err);
+        }
+    }
 });
