@@ -4,12 +4,11 @@
 2. [Advanced Implementation](#advanced)
 
 <a name="basic"></a>
-## Basic Implementation
+# Basic Implementation
 
 At its most basic level, sending proactive messages in the Bot Framework requires a few additions to your solution:
 
 - A separate endpoint on the bot that uses a conversation reference to message the user outside the scope of the bot's onTurn handler
-- A way to pick up "proactive message".
 - A mechanism to store a conversation reference for the user
 - A mechanism to post the stored conversation reference to the separate endpoint
 
@@ -19,7 +18,7 @@ At its most basic level, sending proactive messages in the Bot Framework require
 
 The bot will need to accept requests on a different endpoint than /api/messages and will need to message the user there, though it is outside the scope of the bot's onTurn handler. The Bot Framework enables this functionality through the ```continueConversation()``` method on the BotFrameworkAdapter class. ```continueConversation()``` accepts an instance of the ConversationReference class, so requests to the endpoint must contain a stored instance of a conversation reference object.
 
-The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request bodies containing a conversation reference and message:
+The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing a conversation reference and message:
 
 ```javascript
 server.post('/api/proactive', async (req, res) => {
@@ -29,17 +28,6 @@ server.post('/api/proactive', async (req, res) => {
         await turnContext.sendActivity(message);
     });
 });
-```
-
-### Pick up the proactive message
-
-On every turn, if a user types in a keyword or phrase, bot picks it up and trigger triggerProactiveMessage method. The string is also split and cleaned up to retain the text string a person wants to send.
-
-```javascript
-if (turnContext.activity.text.includes('proactive - ')) { 
-// if user types proactive - {message}, send the message proactively
-const message = turnContext.activity.text.split('proactive - ')[1];
-await this.triggerProactiveMessage(turnContext, message);
 ```
 
 ### Store the Conversation Reference
@@ -110,7 +98,18 @@ async triggerProactiveMessage(turnContext, message) {
 }
 ```
 
-The above method uses the fetch npm package to make the post request, but any http client could be used in its place. Call the method from anywhere in your bot's onTurn handler and the bot will send a proactive message.
+The above method uses the fetch npm package to make the post request, but any http client could be used in its place. Call the method from anywhere in your bot's onTurn handler and the bot will send a proactive message. In the basic implementation, the bot is configured to echo user messages unless the user sends a message that begins with "proactive - ", in which case it triggers the method:
+
+```javascript
+if (turnContext.activity.text.includes('proactive - ')) {
+    // if user types proactive - {message}, send the message proactively
+    const message = turnContext.activity.text.split('proactive - ')[1];
+    await this.triggerProactiveMessage(turnContext, message);
+} else {
+    // otherwise, echo text back to user
+    await turnContext.sendActivity(`You said '${turnContext.activity.text}'`);
+}
+```
 
 <a name="advanced"></a>
 ## Advanced Implementation
