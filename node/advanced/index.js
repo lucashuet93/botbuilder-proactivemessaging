@@ -79,8 +79,9 @@ const conversationStorageService = new ConversationAzureStorageService(storageSe
 
 // Init conversation broadcast service
 const broadcastServiceEndpoint = process.env.broadcastEndpoint;
+const broadcastListEndpoint = process.env.broadcastListEndpoint;
 const botBroadcastEndpoint = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? 'http://localhost:3978/api/broadcast' : 'http://broadcastingbot.azurewebsites.net/api/broadcast';
-const broadcastService = new BroadcastAzureService(botBroadcastEndpoint, broadcastServiceEndpoint);
+const broadcastService = new BroadcastAzureService(botBroadcastEndpoint, broadcastListEndpoint, broadcastServiceEndpoint);
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService, broadcastService);
