@@ -1,5 +1,5 @@
 const fetch = require('isomorphic-fetch');
-const { BroadcastService } = require('broadcastService.js');
+const { BroadcastService } = require('./broadcastService.js');
 
 class BroadcastAzureService extends BroadcastService {
     constructor(botBroadcastEndpoint, broadcastServiceEndpoint) {

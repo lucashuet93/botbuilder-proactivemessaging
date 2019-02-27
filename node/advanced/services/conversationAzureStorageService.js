@@ -1,6 +1,6 @@
 const { TurnContext } = require('botbuilder');
 const fetch = require('isomorphic-fetch');
-const { ConversationInMemoryStorageService } = require('ConversationInMemoryStorageService');
+const { ConversationInMemoryStorageService } = require('./conversationInMemoryStorageService.js');
 
 class ConversationAzureStorageService extends ConversationInMemoryStorageService {
     constructor(storageServiceEndpoint) {

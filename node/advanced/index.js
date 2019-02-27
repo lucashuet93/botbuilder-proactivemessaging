@@ -9,8 +9,6 @@ const restify = require('restify');
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require('botbuilder');
 const { ConversationAzureStorageService } = require('./services/ConversationAzureStorageService');
-// const { ConversationInMemoryStorageService } = require('./services/ConversationInMemoryStorageService');
-
 const { BroadcastAzureService } = require('./services/BroadcastAzureService');
 
 // Import required bot configuration.
@@ -75,11 +73,14 @@ adapter.onTurnError = async (context, error) => {
     await context.sendActivity(`Oops. Something went wrong!`);
 };
 
-// Introduce state
-const conversationStorageService = new ConversationAzureStorageService(process.env.storageEndpoint);
-// const conversationStorageService = new ConversationInMemoryStorageService();
+// Init conversation storage service
+const storageServiceEndpoint = process.env.storageEndpoint;
+const conversationStorageService = new ConversationAzureStorageService(storageServiceEndpoint);
 
-const broadcastService = new BroadcastAzureService('http://localhost:3978/api/broadcast', process.env.broadCastEndpoint);
+// Init conversation broadcast service
+const broadcastServiceEndpoint = process.env.broadcastEndpoint;
+const botBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
+const broadcastService = new BroadcastAzureService(botBroadcastEndpoint, broadcastServiceEndpoint);
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService, broadcastService);

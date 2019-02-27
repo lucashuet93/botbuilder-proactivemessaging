@@ -3,7 +3,6 @@
 
 const { ActivityTypes } = require('botbuilder');
 require('es6-promise').polyfill();
-const fetch = require('isomorphic-fetch');
 
 class MyBot {
     constructor(conversationStorageService, broadcastService) {
