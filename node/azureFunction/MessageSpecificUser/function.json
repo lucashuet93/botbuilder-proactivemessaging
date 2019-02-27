@@ -16,8 +16,8 @@
       "name": "userSpecificDocuments",
       "type": "documentDB",
       "direction": "in",
-      "databaseName": "Testing",
-      "collectionName": "References",
+      "databaseName": "YOUR_DATABASE",
+      "collectionName": "YOUR_COLLECTION",
       "sqlQuery": "SELECT * FROM c where c.user.id = {userid}",
       "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
     },
