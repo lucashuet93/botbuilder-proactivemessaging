@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "conversationsList",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "connectionStringSetting": "proactive-bot-cosmosdb_DOCUMENTDB",
+      "direction": "in",
+      "sqlQuery": "SELECT * FROM d"
+    }
+  ]
+}
