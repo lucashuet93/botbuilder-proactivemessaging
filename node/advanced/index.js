@@ -9,6 +9,7 @@ const restify = require('restify');
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require('botbuilder');
 const { ConversationAzureStorageService } = require('./services/ConversationAzureStorageService');
+const { ConversationInMemoryStorageService } = require('./services/ConversationInMemoryStorageService');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
@@ -74,6 +75,7 @@ adapter.onTurnError = async (context, error) => {
 
 // Introduce state
 const conversationStorageService = new ConversationAzureStorageService();
+// const conversationStorageService = new ConversationInMemoryStorageService();
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService);
@@ -89,8 +91,23 @@ server.post('/api/messages', (req, res) => {
 // add proactive endpoint
 server.post('/api/proactive', async (req, res) => {
     let reference = req.body.reference;
-    let message = req.body.message;
+    let message = `**Proactive**: *${req.body.message}*`;
     await adapter.continueConversation(reference, async (turnContext) => {
         await turnContext.sendActivity(message);
+    });
+});
+
+// add broadcast endpoint
+server.post('/api/broadcast', async (req, res) => {
+    let references = req.body.references;
+    let message = `**Broadcasted**: *${req.body.message}*`;
+    references.forEach(async (reference) => {
+        await adapter.continueConversation(reference, async (turnContext) => {
+            try {
+                await turnContext.sendActivity(message);
+            } catch (e) {
+                console.log(e);
+            }
+        });
     });
 });

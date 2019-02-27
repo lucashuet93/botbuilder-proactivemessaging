@@ -12,7 +12,11 @@ class MyBot {
 
     async onTurn(turnContext) {
         if (turnContext.activity.type === ActivityTypes.Message) {
-            if (turnContext.activity.text.includes('proactive - ')) {
+            if (turnContext.activity.text.includes('broadcast - ')) {
+                // if user types proactive - {message}, send the message proactively
+                const message = turnContext.activity.text.split('broadcast - ')[1];
+                await this.broadcastMessage(turnContext, message);
+            } else if (turnContext.activity.text.includes('proactive - ')) {
                 // if user types proactive - {message}, send the message proactively
                 const message = turnContext.activity.text.split('proactive - ')[1];
                 await this.triggerProactiveMessage(turnContext, message);
@@ -31,13 +35,12 @@ class MyBot {
                 }
             }
         }
-        await this.conversationStorageService.saveState(turnContext);
+        await this.conversationStorageService.updateState(turnContext);
     }
 
     async triggerProactiveMessage(turnContext, message) {
         // pull the reference
         const reference = await this.conversationStorageService.restoreReference(turnContext);
-
         const postBody = { reference, message };
         const localProactiveEndpoint = 'http://localhost:3978/api/proactive';
         await turnContext.sendActivity('Proactive message incoming...');
@@ -45,6 +48,38 @@ class MyBot {
         await fetch(localProactiveEndpoint, {
             method: 'POST',
             body: JSON.stringify(postBody),
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    async broadcastMessage(turnContext, message) {
+        // pull the reference
+        const reference = await this.conversationStorageService.restoreReference(turnContext);
+        const postBody = { reference, message };
+        const broadcastEndpoint = 'https://proactive-bot-function.azurewebsites.net/api/broadcastConversation?code=ADT5RTIydqugxGMLVub3OyxzwEtYhZ16aUvkDmsrH7i5p7Fjuoj4ww==';
+
+        await turnContext.sendActivity('Broadcasting you message...');
+
+        // get broadcasting references
+        const response = await fetch(broadcastEndpoint, {
+            method: 'POST',
+            body: JSON.stringify(postBody),
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const responseJSON = await response.json();
+
+        const localBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
+
+        const broadcastBody = {
+            references: responseJSON.references,
+            message: responseJSON.message
+        };
+
+        // send messages to all the referenced conversations
+        await fetch(localBroadcastEndpoint, {
+            method: 'POST',
+            body: JSON.stringify(broadcastBody),
             headers: { 'Content-Type': 'application/json' }
         });
     }
