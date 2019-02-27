@@ -1,0 +1,30 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "route": "MessageSpecificUser/{userid}"
+    },
+    {
+      "name": "userSpecificDocuments",
+      "type": "documentDB",
+      "direction": "in",
+      "databaseName": "Testing",
+      "collectionName": "References",
+      "sqlQuery": "SELECT * FROM c where c.user.id = {userid}",
+      "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ]
+}

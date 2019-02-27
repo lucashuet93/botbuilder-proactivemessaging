@@ -1,0 +1,29 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ]
+    },
+    {
+      "name": "allDocuments",
+      "type": "documentDB",
+      "direction": "in",
+      "databaseName": "Testing",
+      "collectionName": "References",
+      "sqlQuery": "SELECT * FROM c",
+      "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ]
+}
