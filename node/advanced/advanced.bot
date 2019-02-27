@@ -1,15 +1,52 @@
 {
-    "name": "basic",
-    "services": [
-        {
-            "type": "endpoint",
-            "name": "development",
-            "endpoint": "http://localhost:3978/api/messages",
-            "appId": "",
-            "appPassword": "",
-            "id": "1"
-        }
-    ],
-    "padlock": "",
-    "version": "2.0"
+  "name": "broadcastingbot",
+  "padlock": "URfdVM+MwRTwp5v+auCqyQ==!cvGTOIzHswXzXoPtXOCu2YQ4KGk4GYF99ouajbJK+CFuL1+XWtz5wjROpCSLOrlz",
+  "version": "2.0",
+  "services": [
+    {
+      "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+      "subscriptionId": "096bd021-e35f-4d08-a558-e4c4c7081f38",
+      "resourceGroup": "proactive-bot-function",
+      "serviceName": "broadcastingbot",
+      "type": "abs",
+      "name": "broadcastingbot",
+      "id": "1"
+    },
+    {
+      "connectionString": "jQbS/xF757Xc9Sh5FYChKA==!oukRS+8unFxC9NjddPF3QS0rTID6TX+4bBWwp4xfqf6qPISheMrFPIk/AASmuMPq49sWyRRy+r1EPEZAHDeu80osel9OLoAfeSmxAeIUBhu1q+CtBQG/j7fJFLLFEMEpxLQwEIohOCr0HPDUwb+jULUxnRJArdT+E0Pw2WgNKwjNvatDM7FgWLc0zlm/fC2QWqiBWGW23SVuEpormrF34D18tFcsV9Y9ZpvuThBslKE=",
+      "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+      "subscriptionId": "096bd021-e35f-4d08-a558-e4c4c7081f38",
+      "resourceGroup": "proactive-bot-function",
+      "serviceName": "broadcastingbotstorage",
+      "type": "blob",
+      "id": "2"
+    },
+    {
+      "appId": "",
+      "appPassword": "",
+      "endpoint": "http://localhost:3978/api/messages",
+      "type": "endpoint",
+      "name": "development",
+      "id": "3"
+    },
+    {
+      "appId": "68419d13-b2a9-4b0c-a0d8-4f243fb70148",
+      "appPassword": "WvOBn5Gh5xvNRoAwRCwCHA==!xP2CtIK2Od7CqZ4ReBEP7tsGDgR9XOQtSuQwsNBSVGw=",
+      "endpoint": "https://broadcastingbot.azurewebsites.net/api/messages",
+      "type": "endpoint",
+      "name": "production",
+      "id": "4"
+    },
+    {
+      "instrumentationKey": "modajf+0k+VT/PBn8YoaEQ==!Rp35WnO/hY5vmn4FpKLQhEQEc3C7UOrk44tAmZfD48UozKURHsy7er2WB17ZHoBo",
+      "applicationId": "570aef9a-1930-4bf8-a305-9919024af0a3",
+      "apiKeys": {},
+      "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+      "subscriptionId": "096bd021-e35f-4d08-a558-e4c4c7081f38",
+      "resourceGroup": "proactive-bot-function",
+      "serviceName": "broadcastingbotxdtpbs",
+      "type": "appInsights",
+      "id": "5"
+    }
+  ]
 }
