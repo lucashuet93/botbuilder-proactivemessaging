@@ -16,6 +16,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
+        "@azure/cosmos": "^2.1.2",
         "botbuilder": "^4.1.5",
         "botframework-config": "^4.1.5",
         "dotenv": "^6.1.0",

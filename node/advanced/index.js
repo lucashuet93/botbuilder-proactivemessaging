@@ -71,12 +71,8 @@ adapter.onTurnError = async (context, error) => {
     await context.sendActivity(`Oops. Something went wrong!`);
 };
 
-// Introduce state
-const memoryStorage = new MemoryStorage();
-const conversationState = new ConversationState(memoryStorage);
-
 // Create the main dialog.
-const myBot = new MyBot(conversationState);
+const myBot = new MyBot();
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {
