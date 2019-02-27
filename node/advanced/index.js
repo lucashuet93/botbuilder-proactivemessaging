@@ -99,7 +99,7 @@ server.post('/api/messages', (req, res) => {
 server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
     let message = `**Broadcasted**: *${req.body.message}*`;
-    references.forEach(async (reference) => {
+    await references.forEach(async (reference) => {
         const channel = reference.channelId.includes('emulator');
         const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
         const matchEnv = (localEnv && channel) || (!localEnv && !channel);
@@ -113,4 +113,5 @@ server.post('/api/broadcast', async (req, res) => {
             });
         }
     });
+    res.sendStatus(200);
 });
