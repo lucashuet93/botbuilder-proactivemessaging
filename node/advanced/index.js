@@ -79,7 +79,7 @@ const conversationStorageService = new ConversationAzureStorageService(storageSe
 
 // Init conversation broadcast service
 const broadcastServiceEndpoint = process.env.broadcastEndpoint;
-const botBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
+const botBroadcastEndpoint = '/api/broadcast';
 const broadcastService = new BroadcastAzureService(botBroadcastEndpoint, broadcastServiceEndpoint);
 
 // Create the main dialog.
