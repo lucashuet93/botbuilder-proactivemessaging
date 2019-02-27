@@ -9,7 +9,7 @@ const restify = require('restify');
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { BotFrameworkAdapter } = require('botbuilder');
 const { ConversationAzureStorageService } = require('./services/ConversationAzureStorageService');
-const { ConversationInMemoryStorageService } = require('./services/ConversationInMemoryStorageService');
+// const { ConversationInMemoryStorageService } = require('./services/ConversationInMemoryStorageService');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
