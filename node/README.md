@@ -114,3 +114,16 @@ The above method uses the fetch npm package to make the post request, but any ht
 
 <a name="advanced"></a>
 ## Advanced Implementation
+
+In this example, the goal is to trigger the proactive message outside of the bot. Some ideas around this including trigerring through the endpoint created from earlier via a website, eventing mechanism or a simple REST call. 
+
+In this example, Azure Functions is used as a trigger to the proactive endpoint created earlier. Some considerations in order the achieve this as follow:-
+
+- A data store to keep conversation information.
+- A mechanism to check the data store
+- A mechanism to send proactive messages to user/s via the endpoint created from earlier
+
+### CosmosDB to keep conversation information
+### Azure Functions to check CosmosDB collection
+### Send proactive messages to a specific user
+### Send proactive messages to a group of users
