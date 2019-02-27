@@ -14,7 +14,16 @@
       "type": "http",
       "direction": "out",
       "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "outputConversation",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "createIfNotExists": false,
+      "connectionStringSetting": "proactive-bot-cosmosdb_DOCUMENTDB",
+      "direction": "out",
+      "partitionKey": "clientId"
     }
-  ],
-  "disabled": false
+  ]
 }
