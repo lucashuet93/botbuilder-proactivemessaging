@@ -6,8 +6,9 @@ require('es6-promise').polyfill();
 const fetch = require('isomorphic-fetch');
 
 class MyBot {
-    constructor(conversationStorageService) {
+    constructor(conversationStorageService, broadcastService) {
         this.conversationStorageService = conversationStorageService;
+        this.broadcastService = broadcastService;
     }
 
     async onTurn(turnContext) {
@@ -68,17 +69,7 @@ class MyBot {
     async getBroadcastList(turnContext, message) {
         // pull the reference
         const originReference = await this.conversationStorageService.restoreReference(turnContext);
-        const postBody = { originReference, message };
-        const broadcastEndpoint = 'https://proactive-bot-function.azurewebsites.net/api/broadcastConversation?code=ADT5RTIydqugxGMLVub3OyxzwEtYhZ16aUvkDmsrH7i5p7Fjuoj4ww==';
-
-        // get broadcasting references
-        const response = await fetch(broadcastEndpoint, {
-            method: 'POST',
-            body: JSON.stringify(postBody),
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        return await response.json();
+        return await this.broadcastService.getBroadcastList(originReference, message);
     }
 }
 
