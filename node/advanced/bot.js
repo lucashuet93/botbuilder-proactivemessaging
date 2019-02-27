@@ -14,17 +14,15 @@ class MyBot {
     async onTurn(turnContext) {
         if (turnContext.activity.type === ActivityTypes.Message) {
             if (turnContext.activity.text.includes('broadcast - ')) {
-                // if user types proactive - {message}, send the message proactively
+                // if user types "broadcast - {message}", send the message to everyone
                 const message = turnContext.activity.text.split('broadcast - ')[1];
-
                 const broadCastList = await this.getBroadcastList(turnContext, message);
-                await this.broadcastMessage(broadCastList);
+                await this.broadcastService.broadcast(broadCastList);
             } else if (turnContext.activity.text.includes('proactive - ')) {
-                // if user types proactive - {message}, send the message proactively
+                // if user types "proactive - {message}", send the message proactively
                 const message = turnContext.activity.text.split('proactive - ')[1];
-
                 const broadCastList = await this.getProactiveList(turnContext, message);
-                await this.broadcastMessage(broadCastList);
+                await this.broadcastService.broadcast(broadCastList);
             } else {
                 // otherwise, echo text back to user
                 await turnContext.sendActivity(`You said '${turnContext.activity.text}'`);
@@ -41,17 +39,6 @@ class MyBot {
             }
         }
         await this.conversationStorageService.updateState(turnContext);
-    }
-
-    async broadcastMessage(broadCastList) {
-        const localBroadcastEndpoint = 'http://localhost:3978/api/broadcast';
-
-        // send messages to all the referenced conversations
-        await fetch(localBroadcastEndpoint, {
-            method: 'POST',
-            body: JSON.stringify(broadCastList),
-            headers: { 'Content-Type': 'application/json' }
-        });
     }
 
     async getProactiveList(turnContext, message) {

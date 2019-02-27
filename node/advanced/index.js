@@ -79,7 +79,7 @@ adapter.onTurnError = async (context, error) => {
 const conversationStorageService = new ConversationAzureStorageService(process.env.storageEndpoint);
 // const conversationStorageService = new ConversationInMemoryStorageService();
 
-const broadcastService = new BroadcastAzureService(process.env.broadCastEndpoint);
+const broadcastService = new BroadcastAzureService('http://localhost:3978/api/broadcast', process.env.broadCastEndpoint);
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService, broadcastService);
