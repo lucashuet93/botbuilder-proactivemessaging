@@ -22,12 +22,7 @@ class BroadcastAzureService extends BroadcastService {
     }
 
     async azureBroadcast(broadCastList) {
-        // send messages to all the referenced conversations
-        await fetch(this.broadcastServiceEndpoint, {
-            method: 'POST',
-            body: JSON.stringify(broadCastList),
-            headers: { 'Content-Type': 'application/json' }
-        });
+        this.broadcast(broadCastList, this.broadcastServiceEndpoint);
     }
 }
 
