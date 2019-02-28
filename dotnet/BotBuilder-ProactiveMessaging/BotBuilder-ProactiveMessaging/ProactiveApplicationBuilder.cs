@@ -31,11 +31,10 @@ namespace BotBuilder_ProactiveMessaging
 
             var applicationServices = applicationBuilder.ApplicationServices;
 
-            var appConfiguration = applicationServices.GetRequiredService<IConfiguration>();
-            var proactiveEndpoint = appConfiguration.GetSection("proactiveEndpoint")?.Value;
-
+            //Get Bot Options from DI Container so we can access AppId stored within SimpleCredentialProvider object
             var botOptions = applicationServices.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
 
+            //Get adapter reference, which we need for calling ContinueConversationAsync
             var adapter = applicationServices.GetRequiredService<IAdapterIntegration>();
            
             applicationBuilder.Map(

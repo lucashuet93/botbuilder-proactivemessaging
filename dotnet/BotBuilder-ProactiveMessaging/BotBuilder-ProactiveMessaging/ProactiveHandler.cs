@@ -3,9 +3,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -69,7 +67,7 @@ namespace BotBuilder_ProactiveMessaging
         }
 
         /// <summary>
-        /// Create your proactive message here
+        /// Builds and sends proactive message
         /// </summary>
         /// <returns></returns>
         private BotCallbackHandler CreateCallback(ProactiveMessageRequestBody req)
