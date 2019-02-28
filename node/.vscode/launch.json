@@ -6,15 +6,15 @@
     "configurations": [
         {
             "type": "node",
-            "request": "attach",
-            "name": "Docker: Attach to Node",
-            "remoteRoot": "/usr/src/app"
+            "request": "launch",
+            "name": "Launch Program",
+            "program": "${workspaceFolder}/advanced/index.js"
         },
         {
             "type": "node",
-            "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/../c:\\Users\\konkich\\Documents\\GitHub\\botbuilder-proactivemessaging\\node\\advanced\\services\\broadcastService.js"
+            "request": "attach",
+            "name": "Docker: Attach to Node",
+            "remoteRoot": "/usr/src/app"
         }
     ]
 }

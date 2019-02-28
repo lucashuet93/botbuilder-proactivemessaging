@@ -14,7 +14,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\index.js"
+            "program": "${workspaceFolder}/../c:\\Users\\konkich\\Documents\\GitHub\\botbuilder-proactivemessaging\\node\\advanced\\index.js"
         }
     ]
 }

@@ -78,11 +78,11 @@ const storageServiceEndpoint = process.env.storageEndpoint;
 const conversationStorageService = new ConversationAzureStorageService(storageServiceEndpoint);
 
 // Init conversation broadcast service
-const broadcastServiceEndpoint = process.env.broadcastEndpoint;
+const azureBroadcastEndpoint = process.env.azureBroadcastEndpoint;
 const broadcastListEndpoint = process.env.broadcastListEndpoint;
-const botEndpoint = process.env.botEndpoint;
-const botBroadcastEndpoint = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? 'http://localhost:3978/api/broadcast' : botEndpoint;
-const broadcastService = new BroadcastAzureService(botBroadcastEndpoint, broadcastListEndpoint, broadcastServiceEndpoint);
+const botBroadcastEndpoint = process.env.botBroadcastEndpoint;
+const broadcastEndpoint = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? 'http://localhost:3978/api/broadcast' : botBroadcastEndpoint;
+const broadcastService = new BroadcastAzureService(broadcastEndpoint, broadcastListEndpoint, azureBroadcastEndpoint);
 
 // Create the main dialog.
 const myBot = new MyBot(conversationStorageService, broadcastService);
@@ -99,18 +99,22 @@ server.post('/api/messages', (req, res) => {
 server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
     let message = `**Broadcasted**: *${req.body.message}*`;
+    console.log(`Beginning broadcast for ${references.length} references.`);
     await references.forEach(async (reference) => {
-        const channel = reference.channelId.includes('emulator');
+        // const channel = reference.channelId.includes('emulator');
+        const localUrl = reference.serviceUrl.includes('localhost');
         const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
-        const matchEnv = (localEnv && channel) || (!localEnv && !channel);
+        const matchEnv = (localEnv) || (!localEnv && !localUrl);
         if (matchEnv) {
-            await adapter.continueConversation(reference, async (turnContext) => {
-                try {
+            console.log(`Attempting restore conversation at ${reference.serviceUrl}`);
+            try {
+                await adapter.continueConversation(reference, async (turnContext) => {
                     await turnContext.sendActivity(message);
-                } catch (e) {
-                    console.log(e);
-                }
-            });
+                });
+            } catch (e) {
+                console.log(`Unable to restore conversation at ${reference.serviceUrl}`);
+                console.log(`Error message: ${e.toString()}.`);
+            }
         }
     });
     res.send(200);
