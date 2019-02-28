@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -44,7 +45,7 @@ namespace BotBuilder_ProactiveMessaging
         /// <param name="conversationState">The managed conversation state.</param>
         /// <param name="loggerFactory">A <see cref="ILoggerFactory"/> that is hooked to the Azure App Service provider.</param>
         /// <seealso cref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.1#windows-eventlog-provider"/>
-        public BotBuilder_ProactiveMessagingBot(ConversationState conversationState, ILoggerFactory loggerFactory, BotAdapter adapter, EndpointService endpointService)
+        public BotBuilder_ProactiveMessagingBot(ConversationState conversationState, ILoggerFactory loggerFactory)
         {
             if (conversationState == null)
             {
@@ -61,10 +62,6 @@ namespace BotBuilder_ProactiveMessaging
                 CounterState = conversationState.CreateProperty<CounterState>(BotBuilder_ProactiveMessagingAccessors.CounterStateName),
                 ConversationReferenceState = conversationState.CreateProperty<ConversationReference>(BotBuilder_ProactiveMessagingAccessors.ConversationReferenceStateName)
             };
-
-            this._adapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
-
-            this._endpointService = endpointService ?? throw new ArgumentNullException(nameof(endpointService));
            
             _logger = loggerFactory.CreateLogger<BotBuilder_ProactiveMessagingBot>();
             _logger.LogTrace("Turn start.");
@@ -93,14 +90,44 @@ namespace BotBuilder_ProactiveMessaging
             // see https://aka.ms/about-bot-activity-message to learn more about the message and other activity types
             if (turnContext.Activity.Type == ActivityTypes.Message)
             {
+                //This should be sent out of form your backend responsbile for generating proactive message requests
+                //Bellow you can find examples of supported content for proactive message by this sample
 
                 if (turnContext.Activity.Text.ToLower().StartsWith("proactive"))
                 {
-                    var message = new ProactiveMessageRequestBody() { ConversationReference = await _accessors.ConversationReferenceState.GetAsync(turnContext), Message = "Hello" };
+                    var card = new HeroCard
+                    {
+                        Text = "You can upload an image or select one of the following choices",
+                        Buttons = new List<CardAction>()
+                        {
+                            new CardAction(ActionTypes.ImBack, title: "1. Inline Attachment", value: "1"),
+                            new CardAction(ActionTypes.ImBack, title: "2. Internet Attachment", value: "2"),
+                            new CardAction(ActionTypes.ImBack, title: "3. Uploaded Attachment", value: "3"),
+                        }
+                    };
+
+                    var sa = new SuggestedActions()
+                    {
+                        Actions = new List<CardAction>()
+                        {
+                        new CardAction() { Title = "Red", Type = ActionTypes.ImBack, Value = "Red" },
+                        new CardAction() { Title = "Yellow", Type = ActionTypes.ImBack, Value = "Yellow" },
+                        new CardAction() { Title = "Blue", Type = ActionTypes.ImBack, Value = "Blue" },
+                        }
+                    };
+
+                    var message = new ProactiveMessageRequestBody()
+                    {
+                        ConversationReference = await _accessors.ConversationReferenceState.GetAsync(turnContext),
+                        Message = "Hello",
+                        Attachments = new List<Attachment>() { card.ToAttachment(), card.ToAttachment() },
+                        SuggestedActions = sa
+                    };
 
                     var localProactiveEndpoint = "http://localhost:3978/api/proactive";
 
                     await turnContext.SendActivityAsync("Proactive message incoming...");
+                    
                     // send the conversation reference and message to the bot's proactive endpoint
                     var messageContent = JsonConvert.SerializeObject(message);
 
@@ -112,25 +139,26 @@ namespace BotBuilder_ProactiveMessaging
                         byteContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
                         var result = await client.PostAsync(localProactiveEndpoint, byteContent);
-
                     }
                 }
+                else
+                {
+                    // Get the conversation state from the turn context.
+                    var state = await _accessors.CounterState.GetAsync(turnContext, () => new CounterState());
 
-                // Get the conversation state from the turn context.
-                var state = await _accessors.CounterState.GetAsync(turnContext, () => new CounterState());
+                    // Bump the turn count for this conversation.
+                    state.TurnCount++;
 
-                // Bump the turn count for this conversation.
-                state.TurnCount++;
+                    // Set the property using the accessor.
+                    await _accessors.CounterState.SetAsync(turnContext, state);
 
-                // Set the property using the accessor.
-                await _accessors.CounterState.SetAsync(turnContext, state);
+                    // Save the new turn count into the conversation state.
+                    await _accessors.ConversationState.SaveChangesAsync(turnContext);
 
-                // Save the new turn count into the conversation state.
-                await _accessors.ConversationState.SaveChangesAsync(turnContext);
-
-                // Echo back to the user whatever they typed.
-                var responseMessage = $"Turn {state.TurnCount}: You sent '{turnContext.Activity.Text}'\n";
-                await turnContext.SendActivityAsync(responseMessage);
+                    // Echo back to the user whatever they typed.
+                    var responseMessage = $"Turn {state.TurnCount}: You sent '{turnContext.Activity.Text}'\n";
+                    await turnContext.SendActivityAsync(responseMessage);
+                }
             }
             else
             {
@@ -141,6 +169,7 @@ namespace BotBuilder_ProactiveMessaging
                         if (m.Id != turnContext.Activity.Recipient.Id)
                         {
                             // store the conversation reference for the newly added user
+                            // in production scenario you want to store conversation reference in an external store e.g. Cosmos DB, Table Storage etc.
                             await _accessors.ConversationReferenceState.SetAsync(turnContext, turnContext.Activity.GetConversationReference());
                             await _accessors.ConversationState.SaveChangesAsync(turnContext);
                         }
@@ -149,57 +178,6 @@ namespace BotBuilder_ProactiveMessaging
                     await turnContext.SendActivityAsync($"{turnContext.Activity.Type} event detected");
                 }
             }
-        }
-
-        /// <summary>
-        /// Middleware handler for incoming proactive message request
-        /// </summary>
-        /// <param name="httpContext"></param>
-        /// <returns></returns>
-        public async Task HandleProactiveAsync(HttpContext httpContext)
-        {
-            var request = httpContext.Request;
-            var response = httpContext.Response;
-
-            if (request.Method != HttpMethods.Post)
-            {
-                response.StatusCode = (int)HttpStatusCode.MethodNotAllowed;
-            }
-
-            if (request.ContentLength == 0)
-            {
-                response.StatusCode = (int)HttpStatusCode.BadRequest;
-            }  
-
-            try
-            {
-                ProactiveMessageRequestBody proactiveReq;
-                using (var reader = new StreamReader(request.Body, Encoding.UTF8))
-                {
-                    string value = reader.ReadToEnd();
-                    proactiveReq = JsonConvert.DeserializeObject<ProactiveMessageRequestBody>(value);
-                }
-               
-                await this._adapter.ContinueConversationAsync(this._endpointService.AppId, proactiveReq.ConversationReference, CreateCallback(proactiveReq.Message), CancellationToken.None);
-                response.StatusCode = (int)HttpStatusCode.OK;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                response.StatusCode = (int)HttpStatusCode.Forbidden;
-            }
-        }
-
-        /// <summary>
-        /// Create your proactive message here
-        /// </summary>
-        /// <returns></returns>
-        private BotCallbackHandler CreateCallback(string message)
-        {
-            return async (turnContext, token) =>
-            {
-                // Send the user a proactive confirmation message.
-                await turnContext.SendActivityAsync(message);
-            };
         }
     }
 }
