@@ -95,23 +95,26 @@ server.post('/api/messages', (req, res) => {
     });
 });
 
-// add broadcast endpoint
+// Add broadcast endpoint
 server.post('/api/broadcast', async (req, res) => {
     let references = req.body.references;
     let message = `**Broadcasted**: *${req.body.message}*`;
     console.log(`Beginning broadcast for ${references.length} references.`);
+
     await references.forEach(async (reference) => {
-        // const channel = reference.channelId.includes('emulator');
+        // Ensure we are not calling localhost references when we are deployed to the cloud
         const localUrl = reference.serviceUrl.includes('localhost');
         const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
         const matchEnv = (localEnv) || (!localEnv && !localUrl);
         if (matchEnv) {
             console.log(`Attempting restore conversation at ${reference.serviceUrl}`);
             try {
+                // Try restore conversation
                 await adapter.continueConversation(reference, async (turnContext) => {
                     await turnContext.sendActivity(message);
                 });
-            } catch (e) {
+            } catch (err) {
+                // Catch unresponsive references
                 console.log(`Unable to restore conversation at ${reference.serviceUrl}`);
                 console.log(`Error message: ${e.toString()}.`);
             }
