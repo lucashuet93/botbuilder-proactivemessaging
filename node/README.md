@@ -112,7 +112,7 @@ if (turnContext.activity.text.includes('proactive - ')) {
 ```
 
 <a name="advanced"></a>
-## Advanced Implementation
+# Advanced Implementation
 
 In a more advanced implementaion, the goal is to trigger the proactive message outside of the bot. Triggering the /api/proactive endpoint created from earlier could be achieved through via an external web service, eventing mechanism, or a simple REST call. 
 
@@ -126,7 +126,7 @@ It is important to note that any services could be used as alternatives to Cosmo
 
 ***The bot project inside the /node/advancedSample directory fully implements the following instructions.***
 
-### Update the Proactive Endpoint
+### Create the Proactive Endpoint
 
 Broadcasting will require handling of multiple conversation references, and messaging a user could involve several conversation references as well. A user may chat with the bot on multiple channels and could thus have multiple conversation references attached to their user id. The proactive endpoint will continue to use the ```continueConversation()``` method on the BotFrameworkAdapter class, but will need to be updated in order to handle the array of conversation references the Azure Function will ultimately post to it.
 
@@ -295,3 +295,14 @@ if (references.length > 0) {
 }
 ```
 The above method uses the fetch npm package to make the post request, but any http client could be used in its place.
+
+### Complete the Flow
+
+The bot is now configured to store conversation references in Cosmos DB and handle proactive messages to multiple conversations via POST requests, and the Azure Function is configured to retrieve the conversation references for all users or a single user and post them to the bot's proactive endpoint. The function can now be used by any external service to trigger proactive messages to users. The full flow is as follows:
+
+1. The bot stores the conversation reference in Cosmos DB when a user starts a conversation with the bot on a new channel.
+2. The Azure Function accepts a request with a body containing a message property.
+3. The Azure Function retrieve a subset of the conversation references stored in CosmosDB and posts the references and message to the bot's proactive endpoint.
+4. The bot proactively messages each conversation for which references were sent. 
+
+Run the bot and Azure function simultaneously, then make a POST request to one of the Azure Function's endpoints to receive a proactive message. 
