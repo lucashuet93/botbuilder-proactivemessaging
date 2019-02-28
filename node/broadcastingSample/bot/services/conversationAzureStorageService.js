@@ -12,7 +12,7 @@ class ConversationAzureStorageService extends ConversationInMemoryStorageService
         const reference = await this.restoreReference(turnContext);
         // store reference in memory using conversation data property
         await this.conversationReference.set(turnContext, reference);
-
+        // store reference in external storage
         await fetch(this.storageServiceEndpoint, {
             method: 'POST',
             body: JSON.stringify({ reference }),
