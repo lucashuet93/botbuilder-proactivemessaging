@@ -1,0 +1,6 @@
+{
+    "SERVICE_ENDPOINT": "https://YOUR-ENDPOINT-NAME.documents.azure.com:443/",
+    "AUTH_KEY": "YOUR-SECRET",
+    "DATABASE": "DATABASE-NAME",
+    "COLLECTION": "COLLECTION-NAME"
+}
