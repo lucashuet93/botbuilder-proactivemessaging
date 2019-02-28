@@ -5,31 +5,32 @@ module.exports = async function (context, req) {
 
     const message = req.body.message;
     const references = req.body.references;
-
-    const broadcastList = {
-        message,
-        references
+    let broadcastList = {
+        message
     };
+    const broadcastListEnpoint = process.env.broadcastListEnpoint;
+    // build broadcasting list if nothing is provided
+    if (references === null || references === undefined || references.length === 0) {
+        context.log(`No references to broadcast provided. Extracting references from the endpoint.`);
+        const postBody = { originReference: null, message };
 
-    if (references.length > 0) {
-        const botBroadcastEndpoint = "https://broadcastingbot.azurewebsites.net/api/broadcast/";
-
-        await fetch(botBroadcastEndpoint, {
-                method: 'POST',
-                body: JSON.stringify(broadcastList),
-                headers: { 'Content-Type': 'application/json' }
+        const response = await fetch(broadcastListEnpoint, {
+            method: 'POST',
+            body: JSON.stringify(postBody),
+            headers: { 'Content-Type': 'application/json' }
         });
+        broadcastList = await response.json();
+    }
 
-        context.res = {
-            status: 200
-        };
-        context.log(`Broadcasted to ${references.length} conversations.`);
-    }
-    else {
-        context.res = {
-            status: 400,
-            body: "No references to broadcast provided."
-        };
-        context.log(`No references to broadcast provided.`);
-    }
+    const botBroadcastEndpoint = process.env.botBroadcastEndpoint;
+    await fetch(botBroadcastEndpoint, {
+        method: 'POST',
+        body: JSON.stringify(broadcastList),
+        headers: { 'Content-Type': 'application/json' }
+    });
+    context.res = {
+        status: 200
+    };
+    context.log(`Broadcasted to ${broadcastList.references.length} conversations.`);
+    context.done();
 };
