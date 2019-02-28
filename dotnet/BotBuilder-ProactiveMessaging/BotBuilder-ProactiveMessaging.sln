@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28531.58
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotBuilder-ProactiveMessaging", "BotBuilder-ProactiveMessaging\BotBuilder-ProactiveMessaging.csproj", "{95BC587C-EDAF-480B-ABC0-C925B68BD656}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{95BC587C-EDAF-480B-ABC0-C925B68BD656}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95BC587C-EDAF-480B-ABC0-C925B68BD656}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95BC587C-EDAF-480B-ABC0-C925B68BD656}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95BC587C-EDAF-480B-ABC0-C925B68BD656}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9DC59628-351C-409A-AEEB-9C8DA0CEDEC9}
+	EndGlobalSection
+EndGlobal
