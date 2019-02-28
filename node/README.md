@@ -116,21 +116,28 @@ if (turnContext.activity.text.includes('proactive - ')) {
 
 In a more advanced implementaion, the goal is to trigger the proactive message outside of the bot. Triggering the /api/proactive endpoint created from earlier could be achieved through via an external web service, eventing mechanism, or a simple REST call. 
 
-In this example, the service architecture must be capable of sending notifications to specific users as well as broadcasting to the entire subset of users that have interacted with the bot. In order to implement this flow, a few considerations were made:
+In this example, the service architecture must be capable of sending notifications to specific users as well as broadcasting to the entire subset of users that have interacted with the bot. In order to implement this flow, a few requirements must be met:
 
-- The proactive endpoint must be updated to accomodate single messages or broadcast capabilities
+- An updated proactive endpoint capable of broadcasting
 - A database to store conversation references (CosmosDB)
 - An Azure Function capable of retrieving conversation references from the database and posting to the proactive endpoint
 
+The bot will be configured to store conversation references in Cosmos DB and handle proactive messages to multiple conversations via POST requests. The Azure Function will be configured to retrieve the conversation references for all users or a single user and post them to the bot's proactive endpoint. The function can then be used by any external service to trigger proactive messages to users. The full flow is as follows:
+
+1. The bot stores the conversation reference in Cosmos DB when a user starts a conversation with the bot on a new channel.
+2. The Azure Function accepts a request with a body containing a message property.
+3. The Azure Function retrieves a subset of the conversation references stored in CosmosDB and posts the references and message to the bot's proactive endpoint.
+4. The bot proactively messages each conversation for which references were sent. 
+
 It is important to note that any services could be used as alternatives to CosmosDB for storage and Azure Functions for endpoint triggering.
 
-***The bot project inside the /node/advancedSample directory fully implements the following instructions.***
+***The bot and azureFunction projects inside the /node/advancedSample directory fully implement the following instructions.***
 
 ### Create the Proactive Endpoint
 
 Broadcasting will require handling of multiple conversation references, and messaging a user could involve several conversation references as well. A user may chat with the bot on multiple channels and could thus have multiple conversation references attached to their user id. The proactive endpoint will continue to use the ```continueConversation()``` method on the BotFrameworkAdapter class, but will need to be updated in order to handle the array of conversation references the Azure Function will ultimately post to it.
 
-The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing an array of conversation references and message, sending proactive messages to all references sent in the body:
+The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing an array of conversation references and message, ultimately sending proactive messages to all references sent in the body:
 
 ```javascript
 server.post('/api/proactive', async (req, res) => {
@@ -222,7 +229,7 @@ Before you can create the binding, the function must have access to its connecti
 
 ```"AzureWebJobsDocumentDBConnectionString": "YOUR_COSMOS_CONNECTION_STRING"```
 
-Each function should have generated a function.json file that contains configuration metadata, including binding configurations. The following code will create a binding utilizes the connection string environment variable to assign the results of the ```sqlQuery``` to a variable called ```allDocuments```. Add it to the functions.json file in the 'MessageAllUsers' function:
+Each function should have generated a function.json file that contains configuration metadata, including binding configurations. The following code will create a binding that utilizes the connection string environment variable to assign the results of the ```sqlQuery``` to a variable called ```allDocuments```. Add it to the functions.json file in the 'MessageAllUsers' function:
 
 ```javascript
 {
@@ -298,11 +305,4 @@ The above method uses the fetch npm package to make the post request, but any ht
 
 ### Complete the Flow
 
-The bot is now configured to store conversation references in Cosmos DB and handle proactive messages to multiple conversations via POST requests, and the Azure Function is configured to retrieve the conversation references for all users or a single user and post them to the bot's proactive endpoint. The function can now be used by any external service to trigger proactive messages to users. The full flow is as follows:
-
-1. The bot stores the conversation reference in Cosmos DB when a user starts a conversation with the bot on a new channel.
-2. The Azure Function accepts a request with a body containing a message property.
-3. The Azure Function retrieve a subset of the conversation references stored in CosmosDB and posts the references and message to the bot's proactive endpoint.
-4. The bot proactively messages each conversation for which references were sent. 
-
-Run the bot and Azure function simultaneously, then make a POST request to one of the Azure Function's endpoints to receive a proactive message. 
+Run the bot and Azure function simultaneously, then make a POST request to one of the Azure Function's endpoints to proactively broadcast a message or send the message to a specific user. 
