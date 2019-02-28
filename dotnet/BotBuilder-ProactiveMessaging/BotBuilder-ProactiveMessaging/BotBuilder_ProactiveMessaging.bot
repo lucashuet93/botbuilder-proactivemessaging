@@ -1,0 +1,18 @@
+{
+    "name": "BotBuilder_ProactiveMessaging",
+    "description": "",
+    "services": [
+        {
+            "type": "endpoint",
+            "appId": "3b8b57d9-60e3-4ab3-b565-72d5f1574066",
+            "appPassword": "hfjBMT109%-islsNZOA16!%",
+            "endpoint": "http://localhost:3978/api/messages",
+            "id": "1",
+            "name": "development"
+        }
+    ],
+    "padlock": "",
+    "version": "2.0",
+    "path": "C:\\Users\\mlani\\Develop\\Bots\\ProactiveMessaging\\botbuilder-proactivemessaging\\dotnet\\BotBuilder-ProactiveMessaging\\BotBuilder-ProactiveMessaging\\BotBuilder_ProactiveMessaging.bot",
+    "overrides": null
+}
