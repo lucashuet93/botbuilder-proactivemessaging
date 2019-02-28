@@ -1,7 +1,7 @@
 {
-    "name": "advanced",
+    "name": "broadcasting-bot",
     "version": "1.0.0",
-    "description": "Demonstrate advanced proactive messaging",
+    "description": "Demonstrate broadcasting messages",
     "author": "Generated using Microsoft Bot Builder Yeoman generator v4.1.23",
     "license": "MIT",
     "main": "index.js",
