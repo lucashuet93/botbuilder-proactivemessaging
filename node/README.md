@@ -30,6 +30,13 @@ server.post('/api/proactive', async (req, res) => {
 });
 ```
 
+In order for the restify server to handle request body objects, the server must use body parser middleware. Add the following code to the index.js file after the server creation logic:
+
+```javascript
+// add body parser
+server.use(restify.plugins.bodyParser());
+```
+
 ### Store the Conversation Reference
 
 Conversation references can be retrieved during any conversation turn using the turnContext object. The TurnContext class contains a ```getConversationReference()``` method, which accepts an instance of the Activity class, accessible on any turnContext instance.
@@ -69,7 +76,6 @@ Call the method in your bot's onTurn handler, preferably immediately when the bo
 // store the conversation reference for the newly added user
 await this.storeConversationReference(turnContext);
 ```
-The "bot" is considered a user. Newly added "user" means when you start communicating to the bot, you are considered a new "user". 
 
 Make sure to save the conversation state after the method call:
 
