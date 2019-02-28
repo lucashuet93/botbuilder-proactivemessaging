@@ -1,11 +1,11 @@
 <a name="broadcasting"></a>
 ## Broadcasting bot Implementation
 
-This sample is mostly based on the advanced bot sample moving it further into broadcasting abstraction:
+This sample continues the developments made in the advanced bot sample moving it further into broadcasting abstraction:
 - Encapsulate core features into a set of separate classes (as local services)
 - Add an option to broadcast to other users of the same bot
-- Add a new Azure Function for broadcasting from external source
-- Instead of directly storying to CosmosDB we will use an Azure Function as proxy
+- Add a new Azure Function for broadcasting from an external source
+- Instead of directly storying to CosmosDB we use an Azure Function as a  proxy
 
 ![Broadcast Bot Architecture](./../../readme-assets/broadcast-bot-architecture.png).
 
@@ -13,14 +13,14 @@ This sample is mostly based on the advanced bot sample moving it further into br
 
 ### Encapsulate the Conversation Reference Storage
 
-1. We will move all the processing of conversation references to a new separate class `ConversationInMemoryStorageService` (in the `./services/` folder).
+1. Move all the processing of conversation references to a new separate class `ConversationInMemoryStorageService` (in the `./services/` folder).
 
 This class implements three methods:
 - `storeReference(turnContext)` - Extracts the conversation reference from context object and stores it in local memory.
 - `restoreReference(turnContext)` - Restores the conversation reference for provided context object.
 - `updateState(turnContext)` - Updates the conversation reference if there are any changes.
 
-2. Next, in the `index.js` file we create a new object of this class and pass it to the bot constructor:
+2. Next, in the `index.js` file create a new object of this class and pass it to the bot constructor:
 
 ```js
 const conversationStorageService = new ConversationInMemoryStorageService();
@@ -68,7 +68,7 @@ async getProactiveList(turnContext, message) {
 
 ### Extend the Conversation Reference Storage to use External Storage
 
-1. Next, we will extend the `ConversationInMemoryStorageService` class to allow storing refences in cloud (or probably any other external storage of your choice). To do that we created a new class `ConversationAzureStorageService` extending the first one.
+1. Next, extend the `ConversationInMemoryStorageService` class to allow storing refences in cloud (or probably any other external storage of your choice). To do that create a new class `ConversationAzureStorageService` extending the first one.
 
 The constructor of `ConversationAzureStorageService` gets the url to an endpoint that will do the storing:
 
@@ -99,7 +99,7 @@ This class redefines the `storeReference` method as following:
     }
 ```
 
-2. Now if you go back to the `index.js` we redefine the `conversationStorageService` as following:
+2. Now, go back to the `index.js` redefine the `conversationStorageService` as following:
 
 ```js
 // Init conversation storage service
@@ -113,8 +113,8 @@ The Azure Function behind that endpoint is described in the [Azure Functions sec
 
 ### Add the Broadcast Endpoint
 
-1. To broadcast the message to other conversations (or to the current one) we will rename the `/api/proactive` endpoint
-to the `/api/broadcast` (just to highlight our intent) and will add some additional processing of references:
+1. To broadcast the message to other conversations (or to the current one) rename the `/api/proactive` endpoint
+to the `/api/broadcast` (just to highlight our intent) and add checking for the environment context:
 
 ```js
 // Add broadcast endpoint
@@ -153,11 +153,11 @@ const botBroadcastEndpoint = process.env.botBroadcastEndpoint;
 const broadcastEndpoint = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? 'http://localhost:3978/api/broadcast' : botBroadcastEndpoint;
 ```
 
-**Note**: Add `botBroadcastEndpoint` variable to your `.env` file, and to app settings on the Azure Portal. It should refer to the public bot enpoint like `https://<YOUBOTNAME>.azurewebsites.net/api/broadcast`.
+**Note**: Add the `botBroadcastEndpoint` variable to your `.env` file, and to the app settings on the Azure Portal. It should refer to the public bot enpoint like this one: `https://<YOUBOTNAME>.azurewebsites.net/api/broadcast`.
 
 ### Add the Broadcast Service
 
-1. Now we will define a new class `BroadcastService` that encapsulates the call to the endpoint defined in previous section:
+1. Define a new class `BroadcastService` that encapsulates the call to the endpoint defined in the previous section:
 
 ```js
 class BroadcastService {
@@ -180,9 +180,9 @@ class BroadcastService {
 }
 ```
 
-As of now the only purpose of this class is to pass the list of references and the message (defined in the `broadCastList` variable) to some specified endpoint.
+As of now the only purpose of this class is to pass the list of references and the message (defined in the `broadCastList` variable) to the specified endpoint.
 
-2. In the `index.js` we will create an instance of `BroadcastService` and pass it to the bot constructor.
+2. In the `index.js` create an instance of `BroadcastService` and pass it to the bot constructor.
 
 ```js
 const broadcastService = new BroadcastService(broadcastEndpoint);
@@ -206,7 +206,7 @@ No wide broacting is done yet.
 
 ### Extending the Broadcast Service for a Wide Broadcasting
 
-1. We will create a new class `BroadcastAzureService` that extends the `BroadcastService`. It will introduce
+1. Create a new class `BroadcastAzureService` that extends the `BroadcastService`. It will introduce
 two new methods:
 - `getBroadcastList(originReference, message)` - Fetches external endpoint to get the list of conversation references.
 - `azureBroadcast(broadCastList)` - Reuses the `broadcast` method to use external broadcasting endpoint (added for demo purposes only).
@@ -230,7 +230,7 @@ class BroadcastAzureService extends BroadcastService {
 }
 ```
 
-2. In the `index.js` we will substitute the `BroadcastService` with the new `BroadcastAzureService`:
+2. In the `index.js` substitute the `BroadcastService` with the new `BroadcastAzureService`:
 
 ```js
 const broadcastService = new BroadcastAzureService(broadcastEndpoint, broadcastListEndpoint, azureBroadcastEndpoint);
@@ -240,7 +240,7 @@ const myBot = new MyBot(conversationStorageService, broadcastService);
 The `broadcastListEndpoint` and `azureBroadcastEndpoint` consts are extracted from the environment variables,
 and both reference to some Azure Functions.
 
-3. In the `bot.js` we will add a new type of messages - `broadcast - <MSG>` that we can process:
+3. In the `bot.js` add a new type of messages - `broadcast - <MSG>` that we can process:
 
 ```js
             ...
@@ -269,24 +269,27 @@ The `getBroadcastList` method is defined as following:
 Now, if the Azure Functions are implemented, the bot should be able to broadcast messages to all the live conversations.
 
 **Note**: so far we devined in the `.env` file and app settings on the Azure Portal the following variables:
+
+```text
 azureBroadcastEndpoint="https://<YOURAZUREFUNCTION>.azurewebsites.net/api/broadcastConversation?code=<ACCESSKEY1>"
 broadcastListEndpoint="https://<YOURAZUREFUNCTION>.azurewebsites.net/api/getBroadcastList?code=<ACCESSKEY2>"
 storageEndpoint="https://<YOURAZUREFUNCTION>.azurewebsites.net/api/storeConversation?code=<ACCESSKEY3>"
 botBroadcastEndpoint="https://<YOUBOTNAME>.azurewebsites.net/api/broadcast"
 botFilePath="./broadcastingbot.bot"
 botFileSecret="<YOURBOTSECRET>"
+```
 
 <a name="azurefunctions"></a>
 ### Azure Functions
 
-Now let's define some Azure Functions. We will define three functions (source code is available in the `broadcastSample\azureFunction` folder):
+Now let's define our Azure Function. We are going to implement three functions (source code is available in the `broadcastSample\azureFunction` folder):
 - `storeConversation` - stores conversation reference in a CosmosDB database
 - `getBroadcastList` - extracts all conversation references from the CosmosDB database
 - `broadcastConversation` - send the message to provided conversation references (or all the references from CosmosDB)
 
 1. Setup your CosmosDB database and add a new collection (e.g., `Conversations`). 
 
-2. For the `storeConversations` and `getBroadcastList` functions we will define either `out` or `in` directioned binding to that database (can be done visually through the portal or in-code inside the `function.json` file.). Usually it looks like the following structure:
+2. For the `storeConversations` and `getBroadcastList` functions define either `out` or `in` directioned binding to that database (can be done visually through the portal or in-code inside the `function.json` file.). Usually it looks like the following structure:
 
 ```js
 {
