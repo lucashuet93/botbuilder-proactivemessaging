@@ -1,9 +1,8 @@
 {
-  "azureFunctions.projectRuntime": "~2",
+  "azureFunctions.projectRuntime": "~1",
   "azureFunctions.projectLanguage": "JavaScript",
   "azureFunctions.templateFilter": "Verified",
   "azureFunctions.deploySubpath": ".",
-  "azureFunctions.preDeployTask": "func: extensions install",
   "files.exclude": {
     "obj": true,
     "bin": true
