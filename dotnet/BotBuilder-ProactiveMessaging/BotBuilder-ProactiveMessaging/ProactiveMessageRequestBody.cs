@@ -1,4 +1,5 @@
-﻿using Microsoft.Bot.Schema;
+﻿using Microsoft.Bot.Connector;
+using Microsoft.Bot.Schema;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,17 @@ namespace BotBuilder_ProactiveMessaging
 
         [JsonProperty("message")]
         public string Message { get; set; }
+
+        [JsonProperty("attachments")]
+        public List<Attachment> Attachments { get; set; }
+
+        [JsonProperty("suggestedActions")]
+        public SuggestedActions SuggestedActions { get; set; }
+
+        /// <summary>
+        /// used in case of multi tenant bots
+        /// </summary>
+        [JsonProperty("appId")]
+        public string AppId { get; set; }
     }
 }

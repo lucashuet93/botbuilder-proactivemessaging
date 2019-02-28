@@ -22,27 +22,14 @@ namespace BotBuilder_ProactiveMessaging
     public class Startup
     {
         private ILoggerFactory _loggerFactory;
+        private readonly IConfiguration _configuration;
         private readonly bool _isProduction;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+            _configuration = configuration;
             _isProduction = env.IsProduction();
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
         }
-
-        /// <summary>
-        /// Gets the configuration that represents a set of key/value application configuration properties.
-        /// </summary>
-        /// <value>
-        /// The <see cref="IConfiguration"/> that represents a set of key/value application configuration properties.
-        /// </value>
-        public IConfiguration Configuration { get; }
 
         /// <summary>
         /// This method gets called by the runtime. Use this method to add services to the container.
@@ -53,8 +40,8 @@ namespace BotBuilder_ProactiveMessaging
         /// <seealso cref="https://docs.microsoft.com/en-us/azure/bot-service/bot-service-manage-channels?view=azure-bot-service-4.0"/>
         public void ConfigureServices(IServiceCollection services)
         {
-            var secretKey = Configuration.GetSection("botFileSecret")?.Value;
-            var botFilePath = Configuration.GetSection("botFilePath")?.Value;
+            var secretKey = _configuration.GetSection("botFileSecret")?.Value;
+            var botFilePath = _configuration.GetSection("botFilePath")?.Value;
             if (!File.Exists(botFilePath))
             {
                 throw new FileNotFoundException($"The .bot configuration file was not found. botFilePath: {botFilePath}");
@@ -118,14 +105,12 @@ namespace BotBuilder_ProactiveMessaging
             var conversationState = new ConversationState(dataStore);
             services.AddSingleton(conversationState);
 
-            //adding adapter to DI
-            var adapter = new BotFrameworkAdapter(new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword));
-          
+
             services.AddBot<BotBuilder_ProactiveMessagingBot>(
-                serviceProvider =>
-                {
-                    return new BotBuilder_ProactiveMessagingBot(conversationState, _loggerFactory, adapter, endpointService);
-                },
+                //serviceProvider =>
+                //{
+                //    return new BotBuilder_ProactiveMessagingBot(conversationState, _loggerFactory, adapter, endpointService);
+                //},
                 options =>
             {
                 options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
@@ -149,7 +134,8 @@ namespace BotBuilder_ProactiveMessaging
             app.UseDefaultFiles()
                 .UseStaticFiles()
                 .UseBotFramework()
-                .UseProactiveEndpoint();
+                //.UseProactiveEndpoint()
+                .MapProactiveEndpoint(_configuration.GetValue<string>("myProactiveEndpoint"));
         }
     }
 }

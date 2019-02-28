@@ -4,6 +4,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Configuration;
+using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -21,7 +22,7 @@ namespace BotBuilder_ProactiveMessaging
         /// </summary>
         /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseProactiveEndpoint(this IApplicationBuilder applicationBuilder)
+        public static IApplicationBuilder MapProactiveEndpoint(this IApplicationBuilder applicationBuilder, string endpoint)
         {
             if (applicationBuilder == null)
             {
@@ -33,11 +34,13 @@ namespace BotBuilder_ProactiveMessaging
             var appConfiguration = applicationServices.GetRequiredService<IConfiguration>();
             var proactiveEndpoint = appConfiguration.GetSection("proactiveEndpoint")?.Value;
 
-            var bot = applicationServices.GetRequiredService<IBot>();
+            var botOptions = applicationServices.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
+
+            var adapter = applicationServices.GetRequiredService<IAdapterIntegration>();
            
             applicationBuilder.Map(
-            proactiveEndpoint,
-            proactiveAppBuilder => proactiveAppBuilder.Run((bot as BotBuilder_ProactiveMessagingBot).HandleProactiveAsync));
+            endpoint,
+            proactiveAppBuilder => proactiveAppBuilder.Run((new ProactiveHandler(adapter as BotAdapter, (botOptions.CredentialProvider as SimpleCredentialProvider).AppId ).HandleProactiveAsync)));
 
             return applicationBuilder;
         }
