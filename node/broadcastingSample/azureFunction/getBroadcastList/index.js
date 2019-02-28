@@ -6,6 +6,8 @@ module.exports = async function (context, req) {
     // 3. send response with message and references list
 
     const message = req.body.message;
+
+    // ignored, but could be filtered out
     const originReference = req.body.reference;
 
     const list = context.bindings.conversationsList;
