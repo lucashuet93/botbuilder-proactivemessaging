@@ -5,28 +5,17 @@ import { config } from 'dotenv';
 import * as path from 'path';
 import * as restify from 'restify';
 
-// Import required bot services.
-// See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import { BotFrameworkAdapter } from 'botbuilder';
-
-// Import required bot configuration.
 import { BotConfiguration, IEndpointService } from 'botframework-config';
 
-// This bot's main dialog.
 import { ProactiveBot } from './bot';
 
-// Read botFilePath and botFileSecret from .env file.
-// Note: Ensure you have a .env file and include botFilePath and botFileSecret.
 const ENV_FILE = path.join(__dirname, '..', '.env');
 config({ path: ENV_FILE });
 
-// bot endpoint name as defined in .bot file
-// See https://aka.ms/about-bot-file to learn more about .bot file its use and bot configuration.
 const DEV_ENVIRONMENT = 'development';
-
-// bot name as defined in .bot file
-// See https://aka.ms/about-bot-file to learn more about .bot file its use and bot configuration.
 const BOT_CONFIGURATION = (process.env.NODE_ENV || DEV_ENVIRONMENT);
+const BOT_FILE = path.join(__dirname, '..', (process.env.botFilePath || ''));
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -35,9 +24,6 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
     console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
     console.log(`\nTo talk to your bot, open proactiveBot.bot file in the Emulator.`);
 });
-
-// .bot file path
-const BOT_FILE = path.join(__dirname, '..', (process.env.botFilePath || ''));
 
 // Read bot configuration from .bot file.
 let botConfig;
@@ -55,7 +41,6 @@ try {
 const endpointConfig = botConfig.findServiceByNameOrId(BOT_CONFIGURATION) as IEndpointService;
 
 // Create adapter.
-// See https://aka.ms/about-bot-adapter to learn more about .bot file its use and bot configuration.
 const adapter = new BotFrameworkAdapter({
     appId: endpointConfig.appId || process.env.microsoftAppID,
     appPassword: endpointConfig.appPassword || process.env.microsoftAppPassword,
