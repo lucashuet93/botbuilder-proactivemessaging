@@ -13,7 +13,7 @@ import { BotFrameworkAdapter } from 'botbuilder';
 import { BotConfiguration, IEndpointService } from 'botframework-config';
 
 // This bot's main dialog.
-import { MyBot } from './bot';
+import { ProactiveBot } from './bot';
 
 // Read botFilePath and botFileSecret from .env file.
 // Note: Ensure you have a .env file and include botFilePath and botFileSecret.
@@ -70,7 +70,7 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Create the main dialog.
-const myBot = new MyBot();
+const myBot = new ProactiveBot();
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {

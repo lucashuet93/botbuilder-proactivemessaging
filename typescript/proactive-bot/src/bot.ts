@@ -3,7 +3,7 @@
 
 import { ActivityTypes, TurnContext } from 'botbuilder';
 
-export class MyBot {
+export class ProactiveBot {
     /**
      * Use onTurn to handle an incoming activity, received from a user, process it, and reply as needed
      *
