@@ -10,6 +10,8 @@ The Proactive Bot covers the following use cases:
 
 2. To deploy the bot to the Azure Bot Service (ABS) follow the following instructions: [Deploy your bot](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-deploy-az-cli?view=azure-bot-service-4.0).
 
-
+Important notes:
+- Ensure you update the you `<botname>.bot` file with the configuration data that you get from the ABS generated bot. There various strategies on how you can manage encrypting, decrypting and updating the secret key. Just don't store decrypted file in a public repository, or a repository that may eventually become public.
+- 
 
 
