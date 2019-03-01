@@ -1,0 +1,15 @@
+# Proactive Bot - TypeScript Samples
+
+## Proactive Bot - Basic Implementation
+
+The Proactive Bot covers the following use cases:
+- Send a proactive message within the same conversation.
+
+### Prerequisites
+1. This sample begins from creating a fresh new **typescript**-based **echo-bot**. For more details on how to make original setup checks this docs: [Create a bot with the Bot Framework SDK for JavaScript](https://docs.microsoft.com/en-us/azure/bot-service/javascript/bot-builder-javascript-quickstart?view=azure-bot-service-4.0).
+
+2. To deploy the bot to the Azure Bot Service (ABS) follow the following instructions: [Deploy your bot](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-deploy-az-cli?view=azure-bot-service-4.0).
+
+
+
+
