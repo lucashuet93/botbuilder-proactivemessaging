@@ -75,7 +75,9 @@ Finally, store the reference, once the dialog is activated:
         }
 ```
 
-3. Next, add a method for proactive messaging inside your bot implementation. 
+### Send proactive message
+
+Next, add a method for proactive messaging inside your bot implementation. 
 
 If you attemp to just delay sending a message, your code will fail doing it as by that moment it will lose the context of conversation:
 ```js
@@ -106,7 +108,9 @@ Instead, we will restore the reference for active conversation and pass it to a 
 
 Here we are calling the `broadcast` method of some new object `broadcastService` that we didn't add to the project so far. So let's fix it.
 
-4. Add a new broadcasting service to the project, that implements a simple broadcasting interface (`IBroadcastService`):
+### Add Broadcasting Service
+
+1. Add a new broadcasting service to the project, that implements a simple broadcasting interface (`IBroadcastService`):
 
 ```js
 export interface IBroadcastService {
@@ -136,7 +140,7 @@ export class LocalBroadcastService implements IBroadcastService {
 }
 ```
 
-5. Add the reference to broadcasting service to the bot (`index.ts`):
+2. Add the reference to broadcasting service to the bot (`index.ts`):
 
 ```js
 const conversationStorageService = new InMemoryConversationStorage();
@@ -145,7 +149,9 @@ const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
 const myBot = new ProactiveBot(conversationStorageService, broadcastService);
 ```
 
-6. Add the broadcasting endpoint for the bot (`index.ts`):
+### Add Broadcasting Endpoint
+
+Add the broadcasting endpoint for the bot (`index.ts`):
 
 ```js
 // Listen for broadcasting requests
