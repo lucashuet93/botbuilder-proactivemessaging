@@ -21,11 +21,11 @@ Important notes:
 
 ### Store Conversation Reference
 
-To continue the conversation in a distant moment in future, we have to extract and store somewhere a reference to the current conversations:
+1. To continue the conversation in a distant moment in future, we have to extract and store somewhere a reference to the current conversations:
 - To extract the reference we use the static function: `TurnContext.getConversationReference`.
 - To temporary same the reference we create a `ConversationState` object based on a `MemoryStorage` object.
 
-These calls are encapsulated into a new class `InMemoryConversationStorage` in the `/services/` subfolder. Implement two main methods (optionally, you can also update the state):
+These calls are encapsulated into a new class `InMemoryConversationStorage` in the `/services/` subfolder. Implement two main methods (optionally, you can also update the state) defined in the `IConversationStorageService` interface:
 
 *Restore or create a reference to the conversation*
 ```js
@@ -49,3 +49,4 @@ These calls are encapsulated into a new class `InMemoryConversationStorage` in t
     }
 ```
 
+2. Create a new conversation storage object

@@ -1,8 +1,9 @@
-import { ConversationReference, ConversationState, MemoryStorage, StatePropertyAccessor, TurnContext } from 'botbuilder';
+import { ConversationReference, ConversationState, MemoryStorage, StatePropertyAccessor, TurnContext } from "botbuilder";
+import { IConversationStorageService } from "./IConversationStorageService";
 
-const CONVERSATION_REFERENCE = 'CONVERSATION_REFERENCE';
+const CONVERSATION_REFERENCE = "CONVERSATION_REFERENCE";
 
-export class InMemoryConversationStorage {
+export class InMemoryConversationStorage implements IConversationStorageService {
     private conversationState: ConversationState;
     private conversationReferenceStorage: StatePropertyAccessor;
 

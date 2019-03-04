@@ -1,21 +1,22 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { config } from 'dotenv';
-import * as path from 'path';
-import * as restify from 'restify';
+import { config } from "dotenv";
+import * as path from "path";
+import * as restify from "restify";
 
-import { BotFrameworkAdapter } from 'botbuilder';
-import { BotConfiguration, IEndpointService } from 'botframework-config';
+import { BotFrameworkAdapter } from "botbuilder";
+import { BotConfiguration, IEndpointService } from "botframework-config";
 
-import { ProactiveBot } from './bot';
+import { ProactiveBot } from "./bot";
+import { InMemoryConversationStorage } from "./services/InMemoryConversationStorage";
 
-const ENV_FILE = path.join(__dirname, '..', '.env');
+const ENV_FILE = path.join(__dirname, "..", ".env");
 config({ path: ENV_FILE });
 
-const DEV_ENVIRONMENT = 'development';
+const DEV_ENVIRONMENT = "development";
 const BOT_CONFIGURATION = (process.env.NODE_ENV || DEV_ENVIRONMENT);
-const BOT_FILE = path.join(__dirname, '..', (process.env.botFilePath || ''));
+const BOT_FILE = path.join(__dirname, "..", (process.env.botFilePath || ""));
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -55,10 +56,11 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Create the main dialog.
-const myBot = new ProactiveBot();
+const conversationStorage = new InMemoryConversationStorage();
+const myBot = new ProactiveBot(conversationStorage);
 
 // Listen for incoming requests.
-server.post('/api/messages', (req, res) => {
+server.post("/api/messages", (req, res) => {
     adapter.processActivity(req, res, async (context) => {
         // Route to main dialog.
         await myBot.onTurn(context);
