@@ -1,4 +1,6 @@
-# Proactive Messaging for Node
+# Proactive Messaging in Node Bot Framework v4 SDK
+
+This sub repository contains code sample and instructions which demonstrate basic and advanced implementation of proactive messaging in Node. 
 
 1. [Basic Implementation](#basic)
 2. [Advanced Implementation](#advanced)
@@ -6,11 +8,11 @@
 <a name="basic"></a>
 # Basic Implementation
 
-At its most basic level, sending proactive messages in the Bot Framework requires a few additions to your solution:
+At its most basic level, sending proactive messages requires a few additions to your solution:
 
 - A separate endpoint on the bot that uses a conversation reference to message the user outside the scope of the bot's onTurn handler
 - A mechanism to store a conversation reference for the user
-- A mechanism to post the stored conversation reference to the separate endpoint
+- A mechanism to retrieve the stored conversation reference and invoke the proactive message endpoint
 
 ***The bot project inside the /node/basic-sample directory fully implements the following instructions.***
 
