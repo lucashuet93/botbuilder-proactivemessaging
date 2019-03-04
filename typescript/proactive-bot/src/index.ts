@@ -10,6 +10,7 @@ import { BotConfiguration, IEndpointService } from "botframework-config";
 
 import { ProactiveBot } from "./bot";
 import { InMemoryConversationStorage } from "./services/InMemoryConversationStorage";
+import { LocalBroadcastService } from "./services/LocalBroadcastService";
 
 const ENV_FILE = path.join(__dirname, "..", ".env");
 config({ path: ENV_FILE });
@@ -25,6 +26,8 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
     console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
     console.log(`\nTo talk to your bot, open proactiveBot.bot file in the Emulator.`);
 });
+// add body parser
+server.use(restify.plugins.bodyParser());
 
 // Read bot configuration from .bot file.
 let botConfig;
@@ -56,8 +59,10 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Create the main dialog.
-const conversationStorage = new InMemoryConversationStorage();
-const myBot = new ProactiveBot(conversationStorage);
+const conversationStorageService = new InMemoryConversationStorage();
+const localBroadcastEndpoint = "http://localhost:3978/api/broadcast";
+const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
+const myBot = new ProactiveBot(conversationStorageService, broadcastService);
 
 // Listen for incoming requests.
 server.post("/api/messages", (req, res) => {
@@ -65,4 +70,42 @@ server.post("/api/messages", (req, res) => {
         // Route to main dialog.
         await myBot.onTurn(context);
     });
+});
+
+// Listen for broadcasting requests
+server.post("/api/broadcast", async (req, res) => {
+    const broadcastMessage = req.body;
+    if (broadcastMessage !== null && broadcastMessage !== undefined) {
+        const references = req.body.references;
+        const message = req.body.message;
+
+        const notifyMessage = `*Broadcasting message is comming...*`;
+
+        console.log(`Beginning broadcast for ${references.length} references.`);
+
+        await references.forEach(async (reference) => {
+            // Ensure we are not calling localhost references when we are deployed to the cloud
+            const localUrl = reference.serviceUrl.includes("localhost");
+            const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
+            const matchEnv = (localEnv) || (!localEnv && !localUrl);
+            if (matchEnv) {
+                console.log(`Attempting restore conversation at ${reference.serviceUrl}`);
+                try {
+                    // Try restore conversation
+                    await adapter.continueConversation(reference, async (turnContext) => {
+                        await turnContext.sendActivity(notifyMessage);
+                        await turnContext.sendActivity(message);
+                    });
+                } catch (err) {
+                    // Catch unresponsive references
+                    console.log(`Unable to restore conversation at ${reference.serviceUrl}`);
+                    console.log(`Error message: ${err.toString()}.`);
+                }
+            }
+        });
+        res.send(200);
+    } else {
+        console.log(`Unable to extract the broadcasting message.`);
+        res.send(401);
+    }
 });
