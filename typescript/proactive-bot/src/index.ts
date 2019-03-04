@@ -21,12 +21,8 @@ const BOT_FILE = path.join(__dirname, "..", (process.env.botFilePath || ""));
 
 // Create HTTP server.
 const server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-    console.log(`\n${server.name} listening to ${server.url}`);
-    console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
-    console.log(`\nTo talk to your bot, open proactiveBot.bot file in the Emulator.`);
-});
-// add body parser
+server.listen(process.env.port || process.env.PORT || 3978);
+// Add body parser
 server.use(restify.plugins.bodyParser());
 
 // Read bot configuration from .bot file.
@@ -34,10 +30,7 @@ let botConfig;
 try {
     botConfig = BotConfiguration.loadSync(BOT_FILE, process.env.botFileSecret);
 } catch (err) {
-    console.error(`\nError reading bot file. Please ensure you have valid botFilePath and botFileSecret set for your environment.`);
-    console.error(`\n - The botFileSecret is available under appsettings for your Azure Bot Service bot.`);
-    console.error(`\n - If you are running this bot locally, consider adding a .env file with botFilePath and botFileSecret.`);
-    console.error(`\n - See https://aka.ms/about-bot-file to learn more about .bot file its use and bot configuration.\n\n`);
+    console.error(`\nError reading bot file.`);
     process.exit();
 }
 
@@ -54,21 +47,22 @@ const adapter = new BotFrameworkAdapter({
 adapter.onTurnError = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
     console.error(`\n [onTurnError]: ${ error }`);
-    // Send a message to the user
     await context.sendActivity(`Oops. Something went wrong!`);
 };
 
+const localURL = "http://localhost:3978";
+const botServiceURL = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? localURL : process.env.botAzureServiceURL;
+
 // Create the main dialog.
 const conversationStorageService = new InMemoryConversationStorage();
-const localBroadcastEndpoint = "http://localhost:3978/api/broadcast";
-const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
-const myBot = new ProactiveBot(conversationStorageService, broadcastService);
+const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
+const broadcastService = new LocalBroadcastService(broadcastEndpoint);
+const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
 
 // Listen for incoming requests.
 server.post("/api/messages", (req, res) => {
     adapter.processActivity(req, res, async (context) => {
-        // Route to main dialog.
-        await myBot.onTurn(context);
+        await proactiveBot.onTurn(context);
     });
 });
 
@@ -99,7 +93,7 @@ server.post("/api/broadcast", async (req, res) => {
         });
         res.send(200);
     } else {
-        // No body
+        // No body found
         res.send(204);
     }
 });

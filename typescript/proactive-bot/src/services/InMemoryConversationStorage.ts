@@ -7,7 +7,7 @@ export class InMemoryConversationStorage implements IConversationStorageService 
     private conversationState: ConversationState;
     private conversationReferenceStorage: StatePropertyAccessor;
 
-    constructor() {
+    public constructor() {
         const memoryStorage = new MemoryStorage();
         this.conversationState = new ConversationState(memoryStorage);
         this.conversationReferenceStorage = this.conversationState.createProperty(CONVERSATION_REFERENCE);

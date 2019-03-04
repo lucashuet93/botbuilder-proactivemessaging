@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 import { ActivityTypes, TurnContext } from "botbuilder";
-import * as fetch from "isomorphic-fetch";
 import { IBroadcastService } from "./services/IBroadcastService";
 import { IConversationStorageService } from "./services/IConversationStorageService";
 

@@ -1,11 +1,15 @@
 # Proactive Bot - TypeScript Samples
 
-## Proactive Bot - Basic Implementation
-
 The Proactive Bot covers the following use cases:
 - Send a proactive message within the same conversation.
 - Broadcast a message to all live conversations from with-in chat.
 - Broadcast a message to all live conversations from external endpoint.
+
+## Proactive Bot - Basic Implementation
+
+The basic implementation covers dealing with conversation references and sending delayed messages to the same conversation. 
+
+A good use case for that is when user requested for some info or action, but extracting or executing it will take some time. So you put a request into some queue with the conversation reference data, and when response is ready you just restore the conversation.
 
 ### Prerequisites
 
@@ -53,7 +57,7 @@ These calls are encapsulated into a new class `InMemoryConversationStorage` in t
 ```js
 // Create the main dialog.
 const conversationStorageService = new InMemoryConversationStorage();
-const myBot = new ProactiveBot(conversationStorageService);
+const proactiveBot = new ProactiveBot(conversationStorageService);
 ```
 
 And store the reference to storage in a bot property:
@@ -149,7 +153,7 @@ export class LocalBroadcastService implements IBroadcastService {
 const conversationStorageService = new InMemoryConversationStorage();
 const localBroadcastEndpoint = "http://localhost:3978/api/broadcast";
 const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
-const myBot = new ProactiveBot(conversationStorageService, broadcastService);
+const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
 ```
 
 ### Add Broadcasting Endpoint
@@ -183,7 +187,7 @@ server.post("/api/broadcast", async (req, res) => {
         });
         res.send(200);
     } else {
-        // No body
+        // No body found
         res.send(204);
     }
 });
@@ -198,10 +202,51 @@ server.post("/api/broadcast", async (req, res) => {
 server.use(restify.plugins.bodyParser());
 ```
 
----
-### Middle Summary
-So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with 5-sec delay by sending back some message.
+### Deploy The Bot to The Cloud
 
-To do that, we extract the conversation reference and send it to the broadcasting endpoint. Here we restore the conversation and send the message to the user.
+Now let's add some fixes to allow out bot working from the cloud. 
+
+1. Add a reference to the bot deplyment url to your `.env` file and to the application settings on the Azure Portal.
+```
+botAzureServiceURL="https://<YOUR_BOT_NAME>.azurewebsites.net"
+```
+
+2. Update the reference to the broadcasting endpoint in the `index.ts` file:
+```js
+const localURL = "http://localhost:3978";
+const botServiceURL = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? localURL : process.env.botAzureServiceURL;
+
+// Create the main dialog.
+...
+const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
+const broadcastService = new LocalBroadcastService(broadcastEndpoint);
+const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
+```
 
 ---
+### Proactive Bot Summary
+
+So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with a 5-sec delay by sending back some message.
+
+To do that, we extract the conversation reference and send it to the broadcasting endpoint. At the endpoint we restore the conversation and send the message to the user.
+
+---
+
+## Proactive Bot - Broadcasting Implementation
+
+Our next step in the journey of building a proactive bot is to allow the massive broadcasting for multiple users. 
+
+For that we have to store somewhere (in the cloud) references to all the conversations. Once you extract the list of references, you can send messages to all active users.
+
+### Store All The References to The Cloud
+
+In this sample we use a CosmosDB database to store conversation references and Azure Functions to communicate with database.  You can also interact with CosmosDB right from the bot (e.g., bu using [JavaScript SDK for CosmosDB](https://www.npmjs.com/package/@azure/cosmos)).
+
+Use might also decide to use any other services of you choice for these purposes. We just recommend to keep some abstraction layer.
+
+1. Create an instance of the CosmosDB database through the Azure Portal. Use `SQL Core` as API. Create a new database (e.g., `ConversationsDB`) and a new collection (e.g., `ConversationReferences`, use `channelId` as partition key). 
+
+2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/)!
+
+3. 
+
