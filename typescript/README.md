@@ -108,6 +108,9 @@ Instead, we will restore the reference for active conversation and pass it to a 
 
 Here we are calling the `broadcast` method of some new object `broadcastService` that we didn't add to the project so far. So let's fix it.
 
+**Important note**
+- To trigger the `sendDelayedMessage` method we updated the `onTurn` method to parse keywords from the user input.
+
 ### Add Broadcasting Service
 
 1. Add a new broadcasting service to the project, that implements a simple broadcasting interface (`IBroadcastService`):
@@ -194,3 +197,9 @@ server.post("/api/broadcast", async (req, res) => {
 ```js 
 server.use(restify.plugins.bodyParser());
 ```
+
+### ~Middle Summary~
+So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with 5 sec. delay by sending back some message.
+
+To do that, we extract the conversation reference and send it to the broadcasting endpoint. Here we restore the conversation and actually send the message to the user.
+
