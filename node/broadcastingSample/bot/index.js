@@ -116,7 +116,7 @@ server.post('/api/broadcast', async (req, res) => {
             } catch (err) {
                 // Catch unresponsive references
                 console.log(`Unable to restore conversation at ${reference.serviceUrl}`);
-                console.log(`Error message: ${e.toString()}.`);
+                console.log(`Error message: ${err.toString()}.`);
             }
         }
     });
