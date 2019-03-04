@@ -1,32 +1,23 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { config } from 'dotenv';
-import * as path from 'path';
-import * as restify from 'restify';
+import { config } from "dotenv";
+import * as path from "path";
+import * as restify from "restify";
 
-// Import required bot services.
-// See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import { BotFrameworkAdapter } from 'botbuilder';
+import { BotFrameworkAdapter } from "botbuilder";
+import { BotConfiguration, IEndpointService } from "botframework-config";
 
-// Import required bot configuration.
-import { BotConfiguration, IEndpointService } from 'botframework-config';
+import { ProactiveBot } from "./bot";
+import { InMemoryConversationStorage } from "./services/InMemoryConversationStorage";
+import { LocalBroadcastService } from "./services/LocalBroadcastService";
 
-// This bot's main dialog.
-import { MyBot } from './bot';
-
-// Read botFilePath and botFileSecret from .env file.
-// Note: Ensure you have a .env file and include botFilePath and botFileSecret.
-const ENV_FILE = path.join(__dirname, '..', '.env');
+const ENV_FILE = path.join(__dirname, "..", ".env");
 config({ path: ENV_FILE });
 
-// bot endpoint name as defined in .bot file
-// See https://aka.ms/about-bot-file to learn more about .bot file its use and bot configuration.
-const DEV_ENVIRONMENT = 'development';
-
-// bot name as defined in .bot file
-// See https://aka.ms/about-bot-file to learn more about .bot file its use and bot configuration.
+const DEV_ENVIRONMENT = "development";
 const BOT_CONFIGURATION = (process.env.NODE_ENV || DEV_ENVIRONMENT);
+const BOT_FILE = path.join(__dirname, "..", (process.env.botFilePath || ""));
 
 // Create HTTP server.
 const server = restify.createServer();
@@ -35,9 +26,8 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
     console.log(`\nGet Bot Framework Emulator: https://aka.ms/botframework-emulator`);
     console.log(`\nTo talk to your bot, open proactiveBot.bot file in the Emulator.`);
 });
-
-// .bot file path
-const BOT_FILE = path.join(__dirname, '..', (process.env.botFilePath || ''));
+// add body parser
+server.use(restify.plugins.bodyParser());
 
 // Read bot configuration from .bot file.
 let botConfig;
@@ -55,7 +45,6 @@ try {
 const endpointConfig = botConfig.findServiceByNameOrId(BOT_CONFIGURATION) as IEndpointService;
 
 // Create adapter.
-// See https://aka.ms/about-bot-adapter to learn more about .bot file its use and bot configuration.
 const adapter = new BotFrameworkAdapter({
     appId: endpointConfig.appId || process.env.microsoftAppID,
     appPassword: endpointConfig.appPassword || process.env.microsoftAppPassword,
@@ -70,12 +59,47 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Create the main dialog.
-const myBot = new MyBot();
+const conversationStorageService = new InMemoryConversationStorage();
+const localBroadcastEndpoint = "http://localhost:3978/api/broadcast";
+const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
+const myBot = new ProactiveBot(conversationStorageService, broadcastService);
 
 // Listen for incoming requests.
-server.post('/api/messages', (req, res) => {
+server.post("/api/messages", (req, res) => {
     adapter.processActivity(req, res, async (context) => {
         // Route to main dialog.
         await myBot.onTurn(context);
     });
+});
+
+// Listen for broadcasting requests
+server.post("/api/broadcast", async (req, res) => {
+    const broadcastMessage = req.body;
+    if (broadcastMessage !== null && broadcastMessage !== undefined) {
+        const references = broadcastMessage.references;
+        const message = broadcastMessage.message;
+        const notifyMessage = `*Broadcasting message is comming...*`;
+
+        await references.forEach(async (reference) => {
+            // Ensure we are not calling localhost references when we are deployed to the cloud
+            const localUrl = reference.serviceUrl.includes("localhost");
+            const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
+            const matchEnv = (localEnv) || (!localEnv && !localUrl);
+            if (matchEnv) {
+                try {
+                    // Try restore conversation
+                    await adapter.continueConversation(reference, async (turnContext) => {
+                        await turnContext.sendActivity(notifyMessage);
+                        await turnContext.sendActivity(message);
+                    });
+                } catch (err) {
+                    // Catch for unresponsive references
+                }
+            }
+        });
+        res.send(200);
+    } else {
+        // No body
+        res.send(204);
+    }
 });
