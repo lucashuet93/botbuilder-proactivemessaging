@@ -90,7 +90,7 @@ namespace BotBuilder_ProactiveMessaging
             // see https://aka.ms/about-bot-activity-message to learn more about the message and other activity types
             if (turnContext.Activity.Type == ActivityTypes.Message)
             {
-                //This should be sent out of form your backend responsbile for generating proactive message requests
+                //This should be sent out from your backend responsbile for generating proactive message requests
                 //Bellow you can find examples of supported content for proactive message by this sample
 
                 if (turnContext.Activity.Text.ToLower().StartsWith("proactive"))
@@ -124,6 +124,7 @@ namespace BotBuilder_ProactiveMessaging
                         SuggestedActions = sa
                     };
 
+                    //SET this based on the adress of your proactive endpoint
                     var localProactiveEndpoint = "http://localhost:3978/api/proactive";
 
                     await turnContext.SendActivityAsync("Proactive message incoming...");
