@@ -203,6 +203,5 @@ server.use(restify.plugins.bodyParser());
 So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with 5-sec delay by sending back some message.
 
 To do that, we extract the conversation reference and send it to the broadcasting endpoint. Here we restore the conversation and send the message to the user.
+
 ---
-
-
