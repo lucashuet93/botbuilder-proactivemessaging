@@ -134,7 +134,6 @@ namespace BotBuilder_ProactiveMessaging
             app.UseDefaultFiles()
                 .UseStaticFiles()
                 .UseBotFramework()
-                //.UseProactiveEndpoint()
                 .MapProactiveEndpoint(_configuration.GetValue<string>("myProactiveEndpoint"));
         }
     }
