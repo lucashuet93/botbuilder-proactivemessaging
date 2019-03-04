@@ -16,7 +16,7 @@ export class ProactiveBot {
      *
      * @param {TurnContext} context on turn context object.
      */
-    public onTurn = async (context: TurnContext) => {
+    public async onTurn(context: TurnContext) {
         // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types
         if (context.activity.type === ActivityTypes.Message) {
             const msg = context.activity.text;
