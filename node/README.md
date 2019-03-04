@@ -12,7 +12,7 @@ At its most basic level, sending proactive messages in the Bot Framework require
 - A mechanism to store a conversation reference for the user
 - A mechanism to post the stored conversation reference to the separate endpoint
 
-***The bot project inside the /node/basicSample directory fully implements the following instructions.***
+***The bot project inside the /node/basic-sample directory fully implements the following instructions.***
 
 ### Create the Proactive Endpoint
 
@@ -137,7 +137,7 @@ The bot will be configured to store conversation references in Cosmos DB and han
 
 It is important to note that any services could be used as alternatives to CosmosDB for storage and Azure Functions for endpoint triggering.
 
-***The bot and azureFunction projects inside the /node/advancedSample directory fully implement the following instructions.***
+***The bot and azureFunction projects inside the /node/advanced-sample directory fully implement the following instructions.***
 
 ### Create the Proactive Endpoint
 
@@ -249,7 +249,7 @@ Each function should have generated a function.json file that contains configura
 }
 ```
 
-The 'MessageSpecificUser' function requires the same addition with a different ```sqlQuery``` value and can use a different name, though that is entirely up to the developer. The /node/advancedSample/azureFunction/MessageSpecificUser/function.json file demonstrates creation of the binding that retrieves conversation references for a specific user.
+The 'MessageSpecificUser' function requires the same addition with a different ```sqlQuery``` value and can use a different name, though that is entirely up to the developer. The /node/advanced-sample/azureFunction/MessageSpecificUser/function.json file demonstrates creation of the binding that retrieves conversation references for a specific user.
 
 Using the binding in the function code is quite simple. Each function has access to an object called ```context``` that contains its bindings, accessible through ```context.bindings```. The binding name specified in the function.json file becomes a key on the ```context.bindings``` object, so in this case, ```context.bindings.allDocuments``` contains the results of the ```sqlQuery``` value. Add the following code to the 'MessageAllUsers' index.js file to retrieve all conversation references:
 
