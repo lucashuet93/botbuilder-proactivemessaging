@@ -240,5 +240,13 @@ For that we have to store somewhere (in the cloud) references to all the convers
 
 ### Store All The References to The Cloud
 
+In this sample we use a CosmosDB database to store conversation references and Azure Functions to communicate with database.  You can also interact with CosmosDB right from the bot (e.g., bu using [JavaScript SDK for CosmosDB](https://www.npmjs.com/package/@azure/cosmos)).
 
+Use might also decide to use any other services of you choice for these purposes. We just recommend to keep some abstraction layer.
+
+1. Create an instance of the CosmosDB database through the Azure Portal. Use `SQL Core` as API. Create a new database (e.g., `ConversationsDB`) and a new collection (e.g., `ConversationReferences`, use `channelId` as partition key). 
+
+2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/)!
+
+3. 
 
