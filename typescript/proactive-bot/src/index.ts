@@ -76,12 +76,9 @@ server.post("/api/messages", (req, res) => {
 server.post("/api/broadcast", async (req, res) => {
     const broadcastMessage = req.body;
     if (broadcastMessage !== null && broadcastMessage !== undefined) {
-        const references = req.body.references;
-        const message = req.body.message;
-
+        const references = broadcastMessage.references;
+        const message = broadcastMessage.message;
         const notifyMessage = `*Broadcasting message is comming...*`;
-
-        console.log(`Beginning broadcast for ${references.length} references.`);
 
         await references.forEach(async (reference) => {
             // Ensure we are not calling localhost references when we are deployed to the cloud
@@ -89,7 +86,6 @@ server.post("/api/broadcast", async (req, res) => {
             const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
             const matchEnv = (localEnv) || (!localEnv && !localUrl);
             if (matchEnv) {
-                console.log(`Attempting restore conversation at ${reference.serviceUrl}`);
                 try {
                     // Try restore conversation
                     await adapter.continueConversation(reference, async (turnContext) => {
@@ -97,15 +93,13 @@ server.post("/api/broadcast", async (req, res) => {
                         await turnContext.sendActivity(message);
                     });
                 } catch (err) {
-                    // Catch unresponsive references
-                    console.log(`Unable to restore conversation at ${reference.serviceUrl}`);
-                    console.log(`Error message: ${err.toString()}.`);
+                    // Catch for unresponsive references
                 }
             }
         });
         res.send(200);
     } else {
-        console.log(`Unable to extract the broadcasting message.`);
-        res.send(401);
+        // No body
+        res.send(204);
     }
 });

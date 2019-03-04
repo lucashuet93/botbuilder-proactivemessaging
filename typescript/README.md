@@ -49,4 +49,142 @@ These calls are encapsulated into a new class `InMemoryConversationStorage` in t
     }
 ```
 
-2. Create a new conversation storage object
+2. Create a new conversation storage object and pass it to the bot constructor (in the `index.ts`):
+```js
+// Create the main dialog.
+const conversationStorageService = new InMemoryConversationStorage();
+const myBot = new ProactiveBot(conversationStorageService);
+```
+
+And store the reference to storage in a bot property:
+
+```js
+constructor(private conversationStorageService: IConversationStorageService) {
+}
+```
+
+Finally, store the reference, once the dialog is activated:
+```js
+        else if (context.activity.type === ActivityTypes.ConversationUpdate) {
+            ...
+            if (memberAdded && notBot) {
+                await this.sendWelcomeMessage(context);
+                // Extract the reference from the context and store in inside the storage service
+                this.conversationStorageService.storeReference(context);
+            }
+        }
+```
+
+3. Next, add a method for proactive messaging inside your bot implementation. 
+
+If you attemp to just delay sending a message, your code will fail doing it as by that moment it will lose the context of conversation:
+```js
+    private async sendDelayedMessage(context: TurnContext, msg: string, delay: number) {
+        const echoMessage = `**Delayed**: *${msg}*`;
+        const notifyMessage = `*Delayed message will come in ${delay / 1000} seconds.`;
+        await context.sendActivity(notifyMessage);
+        setTimeout(async () => {
+            // This code fails to execute.
+            await context.sendActivity(echoMessage);
+        }, delay);
+    }
+```
+
+Instead, we will restore the reference for active conversation and pass it to a new endpoint:
+```js
+    private async sendDelayedMessage(context: TurnContext, msg: string, delay: number) {
+        const echoMessage = `**Delayed**: *${msg}*`;
+        const notifyMessage = `*Delayed message will come in ~${delay / 1000} seconds.*`;
+        await context.sendActivity(notifyMessage);
+        // Restore conversation reference
+        const reference = await this.conversationStorageService.restoreReference(context);
+        setTimeout(async () => {
+            await this.broadcastService.broadcast([reference], echoMessage);
+        }, delay);
+    }
+```
+
+Here we are calling the `broadcast` method of some new object `broadcastService` that we didn't add to the project so far. So let's fix it.
+
+4. Add a new broadcasting service to the project, that implements a simple broadcasting interface (`IBroadcastService`):
+
+```js
+export interface IBroadcastService {
+    broadcast(references: ConversationReference[], message: string);
+}
+```
+
+Our local broadcasting service is pretty simple -- it is just a wrapper around sending an http request using fetch:
+
+```js
+export class LocalBroadcastService implements IBroadcastService {
+    constructor(private localEndpoint) {
+    }
+
+    public async broadcast(references: ConversationReference[], message: string) {
+        const broadcastMessage = {
+            message,
+            references,
+        };
+
+        await fetch(this.localEndpoint, {
+            body: JSON.stringify(broadcastMessage),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+        });
+    }
+}
+```
+
+5. Add the reference to broadcasting service to the bot (`index.ts`):
+
+```js
+const conversationStorageService = new InMemoryConversationStorage();
+const localBroadcastEndpoint = "http://localhost:3978/api/broadcast";
+const broadcastService = new LocalBroadcastService(localBroadcastEndpoint);
+const myBot = new ProactiveBot(conversationStorageService, broadcastService);
+```
+
+6. Add the broadcasting endpoint for the bot (`index.ts`):
+
+```js
+// Listen for broadcasting requests
+server.post("/api/broadcast", async (req, res) => {
+    const broadcastMessage = req.body;
+    if (broadcastMessage !== null && broadcastMessage !== undefined) {
+        const references = broadcastMessage.references;
+        const message = broadcastMessage.message;
+        const notifyMessage = `*Broadcasting message is comming...*`;
+        await references.forEach(async (reference) => {
+            // Ensure we are not calling localhost references when we are deployed to the cloud
+            const localUrl = reference.serviceUrl.includes("localhost");
+            const localEnv = BOT_CONFIGURATION === DEV_ENVIRONMENT;
+            const matchEnv = (localEnv) || (!localEnv && !localUrl);
+            if (matchEnv) {
+                try {
+                    // Try restore conversation
+                    await adapter.continueConversation(reference, async (turnContext) => {
+                        await turnContext.sendActivity(notifyMessage);
+                        await turnContext.sendActivity(message);
+                    });
+                } catch (err) {
+                    // Catch unresponsive references
+                }
+            }
+        });
+        res.send(200);
+    } else {
+        // No body
+        res.send(204);
+    }
+});
+```
+
+**Important notes**:
+- The endpoint accepts an array of references for future scalability (e.g., broadcast to multiple conversations).
+- We are checking if current environment is development or production (e.g., to avoid sending messages to the localhost while deployed).
+- We are catching attemps to restore conversation as not all the references might be active.
+- To parse the body of request, add the body parsing plugin to restify:
+```js 
+server.use(restify.plugins.bodyParser());
+```
