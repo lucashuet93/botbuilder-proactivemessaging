@@ -224,7 +224,7 @@ const proactiveBot = new ProactiveBot(conversationStorageService, broadcastServi
 ```
 
 ---
-## Proactive Bot Summary
+### Proactive Bot Summary
 
 So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with a 5-sec delay by sending back some message.
 
