@@ -93,7 +93,7 @@ server.post("/api/broadcast", async (req, res) => {
         });
         res.send(200);
     } else {
-        // No body
+        // No body found
         res.send(204);
     }
 });
