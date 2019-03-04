@@ -3,7 +3,7 @@ import * as fetch from "isomorphic-fetch";
 import { IBroadcastService } from "./IBroadcastService";
 
 export class LocalBroadcastService implements IBroadcastService {
-    constructor(private localEndpoint) {
+    public constructor(private localEndpoint) {
     }
 
     public async broadcast(references: ConversationReference[], message: string) {
