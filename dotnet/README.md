@@ -1,16 +1,16 @@
 # Proactive Messaging in C# Bot Framework v4 SDK
 
-This sub repository contains code sample which demonstrates implementation of proactive messaging using separate invocation endpoint.  
+This sub repository contains a code sample and instructions which demonstrate implementation of proactive messaging in .NET using a separate invocation endpoint.  
 
-As discussed in the main Read.me (TODO Add link) file of this repo, one approach to send proactive messages is to create standalone endpoint which will receive requests for sending proactive messages and implement logic, which will instruct the bot to send proactive message to user(s).   At its most basic level, this approach requires a few implementations steps:
+At its most basic level, sending proactive messages requires a few implementation steps:
 
 - A separate endpoint on the bot that uses a conversation reference to  message the user outside the scope of the bot's OnTurnAsync handler
 - A mechanism to store a conversation reference for the user
-- Reading the conversation reference and invoking proactive message
+- A mechanism to retrieve the stored conversation reference and invoke the proactive message endpoint
 
 The bot [project](/dotnet/BotBuilder-ProactiveMessaging) inside the /dotnet/BotBuilder-ProactiveMessaging directory fully implements this functionality. Bellow we are going thru each of the step in detail.
 
-### Creating Proactive Endpoint
+### Create the Proactive Endpoint
 
 As we want our bot to be able to receive proactive message requests on a different endpoint than  /api/messages we need to register new endpoint and add processing logic which enable our bot to message user outside of OnTurnAsync handler. To achieve this, we will build our custom middleware responsible for handling request for sending proactive messages.  Bot Framework itself enables sending of proactive messages through the `ContinueConversationAsync()` method on the BotFrameworkAdapter class. `ContinueConversationAsync()`  accepts an AppId parameter and instance of the ConversationReference class. That means requests to the proactive endpoint must contain a stored instance of a conversation reference  object.
 
@@ -243,7 +243,7 @@ else
 }
 ```
 
-### Invoke Proactive Endpoint
+### Invoke the Proactive Endpoint
 
 Proactive endpoint can be hit by any service at this point as long as it sends a conversation reference and message content in the request  body. That means that for example it can be your backend which already takes care of invoking notification within mobile application, sends newsletter emails etc. However for this basic implementation the endpoint is configured to be hit  by the bot itself. To complete the flow, you'll need to retrieve the  stored conversation reference from conversation state and make a post request to the  proactive endpoint with a body containing the reference and the  message content to be sent (message text, attachments (cards) and suggested actions). Our bot is sending this in OnTurnAsync handler, in case incoming message is starting with word "proactive". For sake of demonstration besides text message we included also hero cards and suggested actions which we want to display within proactive message.
 
