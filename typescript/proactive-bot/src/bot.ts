@@ -37,7 +37,7 @@ export class ProactiveBot {
             if (memberAdded && notBot) {
                 await this.sendWelcomeMessage(context);
                 // Extract the reference from the context and store in inside the storage service
-                this.conversationStorageService.storeReference(context);
+                await this.conversationStorageService.storeReference(context);
             }
         }
     }
