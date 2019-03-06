@@ -248,9 +248,12 @@ Use might also decide to use any other services of you choice for these purposes
 
 2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/), but you still might need to add typescript compiling step in case you use the Azure DevOps Pipeline to deploy.
 
-3. Create a new function under your Azure Function App as http-trigger (e.g. `storeConversationReference`). 
+3. Create a new function inside your Azure Function App as http-trigger (e.g. `storeConversationReference`). 
 
-In the `function.json` file (or manually through the Azure Portal) add binding to connect with your CosmosDB database:
+**Important note**:
+- To use the binging with CosmosDB in Azure Functions you need the `Microsoft.Azure.WebJobs.Extensions.CosmosDB` extension installed for you app. The best way to get it is to add any new function to the app inside the Azure Portal and then to add an integration with CosmosDB through the interface.
+
+4. In the `function.json` file (or manually through the Azure Portal) add binding to connect with your CosmosDB database:
 
 ```js
     {
@@ -265,7 +268,7 @@ In the `function.json` file (or manually through the Azure Portal) add binding t
     }
 ```
 
-Update the connection string to refer to you CosmosDB account, and database and collection names if you used different name while setting up you CosmosDB account.
+The connection string usually is generated one you choose you CosmosDB account, update the database and collection names if you used other names while setting up you CosmosDB account.
 
 Update the default function code to store the reference from the request to the `inputConversationReference` variable from the binding `context`:
 

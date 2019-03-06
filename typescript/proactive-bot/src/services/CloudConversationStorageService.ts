@@ -7,15 +7,16 @@ export class CloudConversationStorageService extends InMemoryConversationStorage
         super();
     }
 
-    public async storeReference(context: TurnContext): Promise<ConversationReference> {
+    public async storeReference(context: TurnContext): Promise< Partial<ConversationReference> > {
         const reference = await super.storeReference(context);
 
         if (reference !== null && reference !== undefined) {
-            await fetch(this.storageEndpoint, {
+            const response = await fetch(this.storageEndpoint, {
                 body: JSON.stringify({ reference }),
                 headers: { "Content-Type": "application/json" },
                 method: "POST",
             });
+            console.log(`${response.status}: ${response.statusText}`);
         }
 
         return reference;
