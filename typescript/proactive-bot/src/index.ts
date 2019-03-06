@@ -9,7 +9,7 @@ import { BotFrameworkAdapter } from "botbuilder";
 import { BotConfiguration, IEndpointService } from "botframework-config";
 
 import { ProactiveBot } from "./bot";
-import { InMemoryConversationStorage } from "./services/InMemoryConversationStorage";
+import { CloudConversationStorageService } from "./services/CloudConversationStorageService";
 import { LocalBroadcastService } from "./services/LocalBroadcastService";
 
 const ENV_FILE = path.join(__dirname, "..", ".env");
@@ -53,8 +53,10 @@ adapter.onTurnError = async (context, error) => {
 const localURL = "http://localhost:3978";
 const botServiceURL = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? localURL : process.env.botAzureServiceURL;
 
+const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
+
 // Create the main dialog.
-const conversationStorageService = new InMemoryConversationStorage();
+const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
 const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
 const broadcastService = new LocalBroadcastService(broadcastEndpoint);
 const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
