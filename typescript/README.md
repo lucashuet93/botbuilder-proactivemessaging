@@ -246,7 +246,99 @@ Use might also decide to use any other services of you choice for these purposes
 
 1. Create an instance of the CosmosDB database through the Azure Portal. Use `SQL Core` as API. Create a new database (e.g., `ConversationsDB`) and a new collection (e.g., `ConversationReferences`, use `channelId` as partition key). 
 
-2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/)!
+2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/), but you still might need to add typescript compiling step in case you use the Azure DevOps Pipeline to deploy.
 
-3. 
+3. Create a new function under your Azure Function App as http-trigger (e.g. `storeConversationReference`). 
+
+In the `function.json` file (or manually through the Azure Portal) add binding to connect with your CosmosDB database:
+
+```js
+    {
+      "type": "cosmosDB",
+      "name": "inputConversationReference",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "createIfNotExists": false,
+      "connectionStringSetting": "<YOUR_COSMOSDB_ACCOUNT_NAME>_DOCUMENTDB",
+      "direction": "out",
+      "partitionKey": "clientId"
+    }
+```
+
+Update the connection string to refer to you CosmosDB account, and database and collection names if you used different name while setting up you CosmosDB account.
+
+Update the default function code to store the reference from the request to the `inputConversationReference` variable from the binding `context`:
+
+```js
+const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+    context.log("Storing conversation reference.");
+
+    const reference = (req.query.reference || (req.body && req.body.reference));
+
+    if (reference) {
+        context.res = {
+            status: 200
+        };
+        context.bindings.inputConversationReference = reference;
+    }
+    else {
+        context.res = {
+            status: 400,
+            body: "Please pass a reference on the query string or in the request body"
+        };
+    }
+    context.done();
+};
+```
+
+4. Deploy the function to the Azure Function App (or manually update the code on the portal).
+
+5. Add a new class `CloudConversationStorageService` extending the `InMemoryConversationStorage` class. Its purpose so far is to pass the stored reference to the endpoint we just deployed to the cloud. That endpoint function will do the job to store reference in the CosmosDB.
+
+```js
+export class CloudConversationStorageService extends InMemoryConversationStorage {
+    public constructor(private storageEndpoint: string) {
+        super();
+    }
+
+    public async storeReference(context: TurnContext): Promise<ConversationReference> {
+        const reference = await super.storeReference(context);
+
+        if (reference !== null && reference !== undefined) {
+            await fetch(this.storageEndpoint, {
+                body: JSON.stringify({ reference }),
+                headers: { "Content-Type": "application/json" },
+                method: "POST",
+            });
+        }
+
+        return reference;
+    }
+}
+```
+
+Note that we are now passing a storeEndpoint that should be triggered. It is the URL to our Azure Function.
+
+6. In the `index.ts` substitute using `InMemoryConversationStorage` with the service we just created:
+
+```js
+const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
+
+// Create the main dialog.
+// Use cloud storate to store conversation references
+const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
+const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
+const broadcastService = new LocalBroadcastService(broadcastEndpoint);
+const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
+```
+
+7. Add the `cloudStorageEndpoint` to your `.env` file and to your bot's application settings on the Azure Portal with the value of the function url. For example:
+
+```js
+cloudStorageEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/storeConversationReference?code=<FUNCTION_ACCESS_KEY>"
+```
+
+8. Test if when you create a new conversation results in storing conversation reference in the CosmosDB database.
+
+
 
