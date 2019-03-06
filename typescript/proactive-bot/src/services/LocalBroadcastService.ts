@@ -6,7 +6,7 @@ export class LocalBroadcastService implements IBroadcastService {
     public constructor(private localEndpoint) {
     }
 
-    public async broadcast(references: ConversationReference[], message: string) {
+    public async broadcast(references: Array< Partial<ConversationReference> >, message: string) {
         const broadcastMessage = {
             message,
             references,

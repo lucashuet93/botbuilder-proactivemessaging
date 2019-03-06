@@ -13,18 +13,19 @@ export class InMemoryConversationStorage implements IConversationStorageService 
         this.conversationReferenceStorage = this.conversationState.createProperty(CONVERSATION_REFERENCE);
     }
 
-    public async storeReference(context: TurnContext): Promise<ConversationReference> {
+    public async storeReference(context: TurnContext): Promise< Partial<ConversationReference>> {
         const reference = await this.restoreReference(context);
         await this.conversationReferenceStorage.set(context, reference);
-        return Promise.resolve(reference);
+        return reference;
     }
 
-    public async restoreReference(context: TurnContext): Promise<ConversationReference> {
+    public async restoreReference(context: TurnContext): Promise< Partial<ConversationReference>> {
         // try extract stored reference
         let reference = await this.conversationReferenceStorage.get(context);
+        const activity = context.activity;
         // else create a new reference from the context
         if (reference === null || reference === undefined) {
-            reference = TurnContext.getConversationReference(context.activity);
+            reference = TurnContext.getConversationReference(activity);
         }
         return reference;
     }
