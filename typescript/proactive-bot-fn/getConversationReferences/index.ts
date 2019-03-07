@@ -4,15 +4,12 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
     context.log('Collecting broadcasting list.');
 
     const originReference = (req.query.reference || (req.body && req.body.reference));
-    const message = (req.query.message || (req.body && req.body.message));
-
     const conversations = context.bindings.conversationReferences;
 
     if (conversations.length > 0) {
         context.res = {
             status: 200,
             body: JSON.stringify({
-                message,
                 references: conversations,
                 origin: originReference,
             }),
