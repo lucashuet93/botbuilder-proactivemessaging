@@ -53,12 +53,13 @@ To continue the conversation in a distant moment in future, we have to extract a
 
 *Restore or create a reference to the conversation*
 ```js
-    public async restoreReference(context: TurnContext): Promise<ConversationReference> {
+    public async restoreReference(context: TurnContext): Promise< Partial<ConversationReference> > {
         // try extract stored reference
         let reference = await this.conversationReferenceStorage.get(context);
+        const activity = context.activity;
         // else create a new reference from the context
         if (reference === null || reference === undefined) {
-            reference = TurnContext.getConversationReference(context.activity);
+            reference = TurnContext.getConversationReference(activity);
         }
         return reference;
     }
@@ -66,10 +67,10 @@ To continue the conversation in a distant moment in future, we have to extract a
 
 *Store a reference to the conversation*
 ```js
-    public async storeReference(context: TurnContext): Promise<ConversationReference> {
+    public async storeReference(context: TurnContext): Promise< Partial<ConversationReference> > {
         const reference = await this.restoreReference(context);
         await this.conversationReferenceStorage.set(context, reference);
-        return Promise.resolve(reference);
+        return reference;
     }
 ```
 
@@ -94,7 +95,7 @@ constructor(private conversationStorageService: IConversationStorageService) {
             if (memberAdded && notBot) {
                 await this.sendWelcomeMessage(context);
                 // Extract the reference from the context and store in inside the storage service
-                this.conversationStorageService.storeReference(context);
+                await this.conversationStorageService.storeReference(context);
             }
         }
 ```
@@ -161,7 +162,7 @@ Now let's implement the broadcasting service mentioned above. It will send the m
 
 ```js
 export interface IBroadcastService {
-    broadcast(references: ConversationReference[], message: string);
+    broadcast(references: Array< Partial<ConversationReference> >, message: string);
 }
 ```
 
@@ -172,7 +173,7 @@ export class LocalBroadcastService implements IBroadcastService {
     constructor(private localEndpoint) {
     }
 
-    public async broadcast(references: ConversationReference[], message: string) {
+    public async broadcast(references: Array< Partial<ConversationReference> >, message: string) {
         const broadcastMessage = {
             message,
             references,
