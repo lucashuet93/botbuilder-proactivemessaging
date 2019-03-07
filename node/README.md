@@ -8,7 +8,7 @@ This sub repository contains code sample and instructions which demonstrate basi
 <a name="basic"></a>
 # Basic Implementation
 
-At its most basic level, sending proactive messages requires a few additions to your solution:
+At its most basic level, sending proactive messages requires a few additions to a botbuilder SDK bot:
 
 - A separate endpoint on the bot that uses a conversation reference to message the user outside the scope of the bot's onTurn handler
 - A mechanism to store a conversation reference for the user
