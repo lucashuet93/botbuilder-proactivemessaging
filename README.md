@@ -1,8 +1,7 @@
-# Proactive Messaging in Bot Framework v4
+# Proactive Messaging
+When developers build bots they tend to focus on the _reactive_ case - the bot receives a message, processes it, and sends something in response. Correspondingly the botbuilder SDK is optimized to handle this case. Oftentimes, however, there is value in having the bot reach out to the user. Bots that need to give users timed reminders, price alerts or notifications from external systems need a mechanism to message a user _proactively_.
 
-Proactive messaging in Bot Framework v4 refers to messages sent to users that are not related to ongoing conversations or user input, but are rather messages sent to the user at any time. Proactive messaging is used in a variety of notification scenarios - timed reminders, price alerts, notifications from external systems, etc.
-
-This repository contains implementation instructions and code samples for both Node and .NET bots.
+This repository contains implementation instructions and code samples creating a proactive bot in Node and .NET using the botbuilder v4 SDK. Each language includes one simple, self-contained sample (no external services), and a more complex, multi-service sample (uses external data store and Azure Fucnction). 
 
 ## Instructions and Samples
 
