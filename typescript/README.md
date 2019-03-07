@@ -1,9 +1,15 @@
 # Proactive Bot - TypeScript Samples
 
 The Proactive Bot covers the following use cases:
+
+[**Basic Implementation**](#basicimplementation)
 - Send a proactive message within the same conversation.
+
+[**Broadcasting Implementation**](#broadcastingimplementation)
 - Broadcast a message to all live conversations from with-in chat.
 - Broadcast a message to all live conversations from external endpoint.
+
+<a name="basicimplementation"></a>
 
 ## Proactive Bot - Basic Implementation
 
@@ -274,6 +280,7 @@ So far we reached the point when we can type to the bot something like "delay: H
 To do that, we extract the conversation reference and send it to the broadcasting endpoint. At the endpoint we restore the conversation and send the message to the user.
 
 ---
+<a name="broadcastingimplementation"></a>
 
 ## Proactive Bot - Broadcasting Implementation
 
