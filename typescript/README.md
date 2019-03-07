@@ -24,12 +24,32 @@ Important notes:
 - Update the `web.config` file to refer to your starting point (e.g. `app.js` in the root folder, or `index.js` in the `lib` folder).
 
 ### Store Conversation Reference
+To continue the conversation in a distant moment in future, we have to extract and store somewhere a reference to the current conversation.
+- To extract the reference we use the static function: `TurnContext.getConversationReference`. 
+- Conversation reference is just a JSON-object (the `ConversationReference` class) of the following structure:
 
-1. To continue the conversation in a distant moment in future, we have to extract and store somewhere a reference to the current conversations:
-- To extract the reference we use the static function: `TurnContext.getConversationReference`.
-- To temporary same the reference we create a `ConversationState` object based on a `MemoryStorage` object.
+```js
+{
+    "activityId": "a63c3a30-405a-11e9-91b4-7126f993d60c",
+    "user": {
+        "id": "3efd258a-7f19-4e79-8356-16500324b4d5",
+        "name": "User"
+    },
+    "bot": {
+        "id": "3",
+        "name": "Bot",
+        "role": "bot"
+    },
+    "conversation": {
+        "id": "a6350e40-405a-11e9-9756-f387f04916fa|livechat"
+    },
+    "channelId": "emulator",
+    "serviceUrl": "http://localhost:60833",
+}
+```
+- To temporary save the reference we create a `ConversationState` object based on a `MemoryStorage` object.
 
-These calls are encapsulated into a new class `InMemoryConversationStorage` in the `/services/` subfolder. Implement two main methods (optionally, you can also update the state) defined in the `IConversationStorageService` interface:
+1. Create a new class [`InMemoryConversationStorage`](./proactive-bot/src/services/InMemoryConversationStorage.ts) (e.g., in the `/services/` subfolder), that will encapsulate calls to the methods/objects mentioned above. Implement two main methods defined in the [`IConversationStorageService`](./proactive-bot/src/services/IConversationStorageService.ts) interface (optionally, you can also update the state):
 
 *Restore or create a reference to the conversation*
 ```js
@@ -67,7 +87,7 @@ constructor(private conversationStorageService: IConversationStorageService) {
 }
 ```
 
-Finally, store the reference, once the dialog is activated:
+3. Finally, store the reference, once the dialog is activated:
 ```js
         else if (context.activity.type === ActivityTypes.ConversationUpdate) {
             ...
@@ -81,9 +101,9 @@ Finally, store the reference, once the dialog is activated:
 
 ### Send proactive message
 
-Next, add a method for proactive messaging inside your bot implementation. 
+Next, add a method for proactive messaging inside your bot implementation (the `bot.ts` file). 
 
-If you attemp to just delay sending a message, your code will fail doing it as by that moment it will lose the context of conversation:
+1. If you attemp to just delay sending a message, your code will fail doing it, as by that moment it will lose the context of the conversation:
 ```js
     private async sendDelayedMessage(context: TurnContext, msg: string, delay: number) {
         const echoMessage = `**Delayed**: *${msg}*`;
@@ -96,7 +116,7 @@ If you attemp to just delay sending a message, your code will fail doing it as b
     }
 ```
 
-Instead, we will restore the reference for active conversation and pass it to a new endpoint:
+2. Instead, we will restore the reference for active conversation and pass it to a new endpoint:
 ```js
     private async sendDelayedMessage(context: TurnContext, msg: string, delay: number) {
         const echoMessage = `**Delayed**: *${msg}*`;
@@ -113,11 +133,31 @@ Instead, we will restore the reference for active conversation and pass it to a 
 Here we are calling the `broadcast` method of some new object `broadcastService` that we didn't add to the project so far. So let's fix it.
 
 **Important note**
-- To trigger the `sendDelayedMessage` method we updated the `onTurn` method to parse keywords from the user input.
+- To trigger the `sendDelayedMessage` method we also updated the `onTurn` method to parse keywords from the user input.
+
+```js
+        ...
+        if (context.activity.type === ActivityTypes.Message) {
+            const msg = context.activity.text;
+            const keywordsRegExp = /(^delay|^postpone|^wait)/i;
+            const match = msg.match(keywordsRegExp);
+
+            if (match !== null) {
+                if (match[0] === "delay" || match[0] === "postpone" || match[0] === "wait") {
+                    const realmsg = msg.substring(match[0].length + 1).trim();
+                    await this.sendDelayedMessage(context, realmsg, 5000);
+                }
+            } else {
+                await this.sendEchoMessage(context, context.activity.text);
+            }
+        }
+```
 
 ### Add Broadcasting Service
 
-1. Add a new broadcasting service to the project, that implements a simple broadcasting interface (`IBroadcastService`):
+Now let's implement the broadcasting service mentioned above. It will send the message to specified endpoint, also passing the reference to conversation that should be restored.
+
+1. Add a new broadcasting service to the project, that implements a simple broadcasting interface ([`IBroadcastService`](./proactive-bot/src/services/IBroadcastService.ts)):
 
 ```js
 export interface IBroadcastService {
@@ -125,7 +165,7 @@ export interface IBroadcastService {
 }
 ```
 
-Our local broadcasting service is pretty simple -- it is just a wrapper around sending an http request using fetch:
+Our [`LocalBroadcastService`](./proactive-bot/src/services/LocalBroadcastService.ts) is pretty simple -- it is just a wrapper around sending an http request using `fetch` (isomorphic-fetch):
 
 ```js
 export class LocalBroadcastService implements IBroadcastService {
@@ -158,7 +198,9 @@ const proactiveBot = new ProactiveBot(conversationStorageService, broadcastServi
 
 ### Add Broadcasting Endpoint
 
-Add the broadcasting endpoint for the bot (`index.ts`):
+Next, our bot should be able to listen to messages on that endpoint.
+
+1. Add the broadcasting endpoint for the bot (`index.ts`):
 
 ```js
 // Listen for broadcasting requests
@@ -320,16 +362,16 @@ export class CloudConversationStorageService extends InMemoryConversationStorage
 }
 ```
 
-Note that we are now passing a storeEndpoint that should be triggered. It is the URL to our Azure Function.
+Note that we are now passing a `storageEndpoint` url that should be triggered. It is the URL to our Azure Function defined above.
 
-6. In the `index.ts` substitute using `InMemoryConversationStorage` with the service we just created:
+6. In the `index.ts` substitute `InMemoryConversationStorage` usage with the service we just created:
 
 ```js
-const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
-
 // Create the main dialog.
 // Use cloud storate to store conversation references
+const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
 const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
+// const conversationStorageService = new InMemoryConversationStorage();
 const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
 const broadcastService = new LocalBroadcastService(broadcastEndpoint);
 const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
@@ -341,7 +383,8 @@ const proactiveBot = new ProactiveBot(conversationStorageService, broadcastServi
 cloudStorageEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/storeConversationReference?code=<FUNCTION_ACCESS_KEY>"
 ```
 
-8. Test if when you create a new conversation results in storing conversation reference in the CosmosDB database.
+8. Test if creating a new conversation results in storing conversation reference in the CosmosDB database.
 
+### Broadcasting Messages through The Cloud
 
-
+Our next goal is to extract the conversation references from CosmosDB and send some messages to these references.
