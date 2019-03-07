@@ -273,7 +273,7 @@ const proactiveBot = new ProactiveBot(conversationStorageService, broadcastServi
 ```
 
 ---
-### Proactive Bot Summary
+### Proactive Bot - Basic Implementation Summary
 
 So far we reached the point when we can type to the bot something like "delay: Hello world" and it will react to that message with a 5-sec delay by sending back some message.
 
@@ -298,12 +298,12 @@ Use might also decide to use any other services of you choice for these purposes
 
 2. Create an instance of the Azure Function App. Configure development and deployment if required. Note that you can now [use TypeScript templates to write your functions](https://azure.microsoft.com/en-us/blog/improving-the-typescript-support-in-azure-functions/), but you still might need to add typescript compiling step in case you use the Azure DevOps Pipeline to deploy.
 
-3. Create a new function inside your Azure Function App as http-trigger (e.g. `storeConversationReference`). 
+3. Create a new function inside your Azure Function App as http-trigger (e.g. [`storeConversationReference`](./proactive-bot-fn/storeConversationReference)). 
 
 **Important note**:
 - To use the binging with CosmosDB in Azure Functions you need the `Microsoft.Azure.WebJobs.Extensions.CosmosDB` extension installed for you app. The best way to get it is to add any new function to the app inside the Azure Portal and then to add an integration with CosmosDB through the interface.
 
-4. In the `function.json` file (or manually through the Azure Portal) add binding to connect with your CosmosDB database:
+4. In the [`function.json`](./proactive-bot-fn/storeConversationReference/function.json) file (or manually through the Azure Portal) add the out-binding to connect with your CosmosDB database:
 
 ```js
     {
@@ -320,7 +320,7 @@ Use might also decide to use any other services of you choice for these purposes
 
 The connection string usually is generated one you choose you CosmosDB account, update the database and collection names if you used other names while setting up you CosmosDB account.
 
-Update the default function code to store the reference from the request to the `inputConversationReference` variable from the binding `context`:
+5. Update the default function code (in the [`index.ts`](./proactive-bot-fn/storeConversationReference/index.ts) file) to store the reference from the request to the `inputConversationReference` variable from the binding `context`:
 
 ```js
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
@@ -346,7 +346,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
 4. Deploy the function to the Azure Function App (or manually update the code on the portal).
 
-5. Add a new class `CloudConversationStorageService` extending the `InMemoryConversationStorage` class. Its purpose so far is to pass the stored reference to the endpoint we just deployed to the cloud. That endpoint function will do the job to store reference in the CosmosDB.
+5. Add a new class [`CloudConversationStorageService`](./proactive-bot/src/services/CloudConversationStorageService.ts) extending the [`InMemoryConversationStorage`](./proactive-bot/src/services/InMemoryConversationStorage.ts) class. Its purpose so far is to pass the stored reference to the endpoint we just deployed to the cloud. That endpoint function will do the job to store reference in the CosmosDB.
 
 ```js
 export class CloudConversationStorageService extends InMemoryConversationStorage {
@@ -396,3 +396,53 @@ cloudStorageEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/st
 ### Broadcasting Messages through The Cloud
 
 Our next goal is to extract the conversation references from CosmosDB and send some messages to these references.
+
+1. Add a new function (e.g., `getConversationReferences`) to your Azure Function app that will extract the list of references and send it back as response.
+
+2. Updates function's bindings file to add the in-binding to connect with your CosmosDB account:
+
+```js
+    {
+      "type": "cosmosDB",
+      "name": "conversationReferences",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "connectionStringSetting": "<YOUR_COSMOSDB_ACCOUNT_NAME>_DOCUMENTDB",
+      "direction": "in",
+      "sqlQuery": "SELECT * FROM d"
+    }   
+```
+
+Here are are also defining the SQL-query to extract the data. You can modify it based on your preference, or furtner extend the function to exctract only specific reference, filter-out the origin reference and so on.
+
+3. Update the function's implementation to pass the `conversationReferences` content as trigger response:
+
+```js
+const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+    context.log('Collecting broadcasting list.');
+
+    const originReference = (req.query.reference || (req.body && req.body.reference));
+    const conversations = context.bindings.conversationReferences;
+
+    if (conversations.length > 0) {
+        context.res = {
+            status: 200,
+            body: JSON.stringify({
+                references: conversations,
+                origin: originReference,
+            }),
+        }
+    } else {
+        context.res = {
+            status: 404,
+            body: "No active references found."
+        };
+    }
+    
+    context.done();
+};
+```
+
+4. Deploy the function to the cloud and add its url to your bot's `.env` file and cloud-bot application settings:
+
+
