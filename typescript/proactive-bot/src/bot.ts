@@ -3,10 +3,10 @@
 
 import { ActivityTypes, TurnContext } from "botbuilder";
 import { IBroadcastService } from "./services/IBroadcastService";
-import { IConversationStorageService } from "./services/IConversationStorageService";
+import { IBroadcastStorageService } from "./services/IBroadcastStorageService";
 
 export class ProactiveBot {
-    constructor(private conversationStorageService: IConversationStorageService,
+    constructor(private conversationStorageService: IBroadcastStorageService,
                 private broadcastService: IBroadcastService) {
     }
 
@@ -19,13 +19,15 @@ export class ProactiveBot {
         // See https://aka.ms/about-bot-activity-message to learn more about the message and other activity types
         if (context.activity.type === ActivityTypes.Message) {
             const msg = context.activity.text;
-            const keywordsRegExp = /(^delay|^postpone|^wait)/i;
+            const keywordsRegExp = /(^delay|^postpone|^wait|^broadcast|^helloworld)/i;
             const match = msg.match(keywordsRegExp);
 
             if (match !== null) {
+                const realmsg = msg.substring(match[0].length + 1).trim();
                 if (match[0] === "delay" || match[0] === "postpone" || match[0] === "wait") {
-                    const realmsg = msg.substring(match[0].length + 1).trim();
                     await this.sendDelayedMessage(context, realmsg, 5000);
+                } else if (match[0] === "broadcast" || match[0] === "spam" || match[0] === "helloworld") {
+                    await this.sendBroadcastMessage(context, realmsg);
                 }
             } else {
                 await this.sendEchoMessage(context, context.activity.text);
@@ -61,5 +63,14 @@ export class ProactiveBot {
         setTimeout(async () => {
             await this.broadcastService.broadcast([reference], echoMessage);
         }, delay);
+    }
+
+    private async sendBroadcastMessage(context: TurnContext, msg: string) {
+        const echoMessage = `**Broadcasting**: *${msg}*`;
+        const notifyMessage = `*Broadcasting to everyone in the chat!*`;
+        await context.sendActivity(notifyMessage);
+        // Restore conversation reference
+        const references = await this.conversationStorageService.restoreAllReferences(context);
+        await this.broadcastService.broadcast(references, echoMessage);
     }
 }
