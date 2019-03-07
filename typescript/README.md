@@ -530,7 +530,7 @@ And the implementation for the `getAllReferences` method:
 
 7. Test/deploy the bot. Now you should be able to type something like "broadcast: hey!" and all connected users should receive that notification.
 
-### Broadcast Messages from External Endpoint
+### Broadcast Messages from an External Endpoint
 
 Our final exercise is to initiate broadcasting from an external endpoint. To implement it we will add a new Azure Function for broadcasting and a Azure Logic App to trigger the project.
 
@@ -586,7 +586,27 @@ broadcastEndpoint --> "https://<YOUR_BOT_NAME>.azurewebsites.net/api/broadcast"
 cloudRestoreEndpoint --> "https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/getConversationReferences?code=<FUNCTION_ACCESS_KEY>"
 ```
 
-3. Use postman (or similar) service to trigger your broadcasting function.
+3. Use the postman (or similar) service or Azure Portal to trigger or test your broadcasting function passing a message as body content:
+
+```js
+{ "message": "hello" }
+```
+
+4. Finally to finish this sample let's add a Logic App that will trigger the broadcast function on timer events. Through the Azure Portal create a new Logic App. From the templates choose the "Reccurence" template.
+
+Setup the timing (e.g., set it trigger every 5 minutes).
+
+Add a new step, select Azure Function, then you Azure Function app name, then `broadcast`. Define the massage that should be broadcasted every five minutes like:
+
+```js
+{ "message": "Hey! Just wanna everyone know, that another 5 minutes passed in this segment of the universe. Wow!" }
+```
+
+Test it. And don't forget to disable the trigger, if you are not sure on sending such events every 5 minutes to every user.
+
+:)
+
+
 
 
 
