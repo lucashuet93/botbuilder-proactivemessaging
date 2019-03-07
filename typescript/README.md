@@ -370,25 +370,25 @@ export class CloudConversationStorageService extends InMemoryConversationStorage
 }
 ```
 
-Note that we are now passing a `storageEndpoint` url that should be triggered. It is the URL to our Azure Function defined above.
+Note that we are now passing a `cloudStoreEndpoint` url that should be triggered. It is the URL to our Azure Function defined above.
 
 6. In the `index.ts` substitute `InMemoryConversationStorage` usage with the service we just created:
 
 ```js
 // Create the main dialog.
 // Use cloud storate to store conversation references
-const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
-const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
+const cloudStoreEndpoint = process.env.cloudStoreEndpoint;
+const conversationStorageService = new CloudConversationStorageService(cloudStoreEndpoint);
 // const conversationStorageService = new InMemoryConversationStorage();
 const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
 const broadcastService = new LocalBroadcastService(broadcastEndpoint);
 const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
 ```
 
-7. Add the `cloudStorageEndpoint` to your `.env` file and to your bot's application settings on the Azure Portal with the value of the function url. For example:
+7. Add the `cloudStoreEndpoint` to your `.env` file and to your bot's application settings on the Azure Portal with the value of the function url. For example:
 
 ```js
-cloudStorageEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/storeConversationReference?code=<FUNCTION_ACCESS_KEY>"
+cloudStoreEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/storeConversationReference?code=<FUNCTION_ACCESS_KEY>"
 ```
 
 8. Test if creating a new conversation results in storing conversation reference in the CosmosDB database.
@@ -445,4 +445,85 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
 
 4. Deploy the function to the cloud and add its url to your bot's `.env` file and cloud-bot application settings:
 
+```js
+cloudRestoreEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/getConversationReferences?code=<FUNCTION_ACCESS_KEY>"
+```
 
+5. Add a new command to recognize by the bot to make a broadcasting. In the `bot.ts` file edit the `onTurn` method to filter the `broadcast` command from user input and call a corresponding method to process that activity:
+
+```js
+            const keywordsRegExp = /(^delay|^postpone|^wait|^broadcast|^helloworld)/i;
+            const match = msg.match(keywordsRegExp);
+
+            if (match !== null) {
+                const realmsg = msg.substring(match[0].length + 1).trim();
+                if (match[0] === "delay" || match[0] === "postpone" || match[0] === "wait") {
+                    await this.sendDelayedMessage(context, realmsg, 5000);
+                } else if (match[0] === "broadcast" || match[0] === "helloworld") {
+                    await this.sendBroadcastMessage(context, realmsg);
+                }
+            }
+```
+
+Also add a new method to the bot:
+
+```js
+    private async sendBroadcastMessage(context: TurnContext, msg: string) {
+        const echoMessage = `**Broadcasting**: *${msg}*`;
+        const notifyMessage = `*Broadcasting to everyone in the chat!*`;
+        await context.sendActivity(notifyMessage);
+        // Restore conversation reference
+        const references = await this.conversationStorageService.restoreAllReferences(context);
+        await this.broadcastService.broadcast(references, echoMessage);
+    }
+```
+
+The `restoreAllReferences` method is not implemented yet, but we will fix it in a minute.
+
+6. Add a new `IBroadcastStorageService` interface extending the `IConversationStorageService` with a new `getAllReferences` method:
+
+```js
+export interface IBroadcastStorageService extends IConversationStorageService {
+    restoreAllReferences(context: TurnContext): Promise< Array< Partial< ConversationReference > > >;
+}
+```
+
+Update you bot constructor to expect this new interface instead of the `IConversationStorageService`:
+
+```js
+    constructor(private conversationStorageService: IBroadcastStorageService,
+                private broadcastService: IBroadcastService) {
+    }
+```
+
+Update the `CloudConversationStorageService` class to implement this new interface, add a new `restoreEndpoint` argument to its constructor:
+
+```js
+export class CloudConversationStorageService extends InMemoryConversationStorage implements IBroadcastStorageService {
+    public constructor(private storageEndpoint: string, private restoreEndpoint: string) {
+        super();
+    }
+    ...
+}
+```
+
+And the implementation for the `getAllReferences` method:
+
+```js
+    public async restoreAllReferences(context: TurnContext): Promise< Array< Partial< ConversationReference > > > {
+        const originReference = await this.restoreReference(context);
+
+        const response = await fetch(this.restoreEndpoint, {
+            body: JSON.stringify({ reference: originReference }),
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+        });
+
+        if (response.status === 200) {
+            const body = await response.json();
+            return body.references;
+        } else {
+            return [originReference];
+        }
+    }
+```

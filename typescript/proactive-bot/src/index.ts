@@ -54,10 +54,10 @@ adapter.onTurnError = async (context, error) => {
 const localURL = "http://localhost:3978";
 const botServiceURL = (BOT_CONFIGURATION === DEV_ENVIRONMENT) ? localURL : process.env.botAzureServiceURL;
 
-const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
-
+const cloudStoreEndpoint = process.env.cloudStoreEndpoint;
+const cloudRestoreEndpoint = process.env.cloudRestoreEndpoint;
 // Create the main dialog.
-const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
+const conversationStorageService = new CloudConversationStorageService(cloudStoreEndpoint, cloudRestoreEndpoint);
 // const conversationStorageService = new InMemoryConversationStorage();
 const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
 const broadcastService = new LocalBroadcastService(broadcastEndpoint);
