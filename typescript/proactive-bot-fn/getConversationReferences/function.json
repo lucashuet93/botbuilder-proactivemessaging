@@ -16,13 +16,12 @@
     },
     {
       "type": "cosmosDB",
-      "name": "inputConversationReference",
+      "name": "conversationReferences",
       "databaseName": "ConversationsDB",
       "collectionName": "ConversationReferences",
-      "createIfNotExists": false,
       "connectionStringSetting": "proactive-bot-ts-db_DOCUMENTDB",
-      "direction": "out",
-      "partitionKey": "clientId"
+      "direction": "in",
+      "sqlQuery": "SELECT * FROM d"
     }
   ],
   "scriptFile": "..\\dist\\storeConversationReference\\index.js"

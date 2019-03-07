@@ -10,6 +10,7 @@ import { BotConfiguration, IEndpointService } from "botframework-config";
 
 import { ProactiveBot } from "./bot";
 import { CloudConversationStorageService } from "./services/CloudConversationStorageService";
+import { InMemoryConversationStorage } from "./services/InMemoryConversationStorage";
 import { LocalBroadcastService } from "./services/LocalBroadcastService";
 
 const ENV_FILE = path.join(__dirname, "..", ".env");
@@ -57,6 +58,7 @@ const cloudStorageEndpoint = process.env.cloudStorageEndpoint;
 
 // Create the main dialog.
 const conversationStorageService = new CloudConversationStorageService(cloudStorageEndpoint);
+// const conversationStorageService = new InMemoryConversationStorage();
 const broadcastEndpoint = `${botServiceURL}/api/broadcast`;
 const broadcastService = new LocalBroadcastService(broadcastEndpoint);
 const proactiveBot = new ProactiveBot(conversationStorageService, broadcastService);
