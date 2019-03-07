@@ -393,7 +393,7 @@ cloudStoreEndpoint="https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/stor
 
 8. Test if creating a new conversation results in storing conversation reference in the CosmosDB database.
 
-### Broadcasting Messages through The Cloud
+### Broadcast Messages through The Cloud
 
 Our next goal is to extract the conversation references from CosmosDB and send some messages to these references.
 
@@ -527,3 +527,67 @@ And the implementation for the `getAllReferences` method:
         }
     }
 ```
+
+7. Test/deploy the bot. Now you should be able to type something like "broadcast: hey!" and all connected users should receive that notification.
+
+### Broadcast Messages from External Endpoint
+
+Our final exercise is to initiate broadcasting from an external endpoint. To implement it we will add a new Azure Function for broadcasting and a Azure Logic App to trigger the project.
+
+1. Add a new `broadcast` function to the Azure Function app. It does not require binding with CosmosDB.
+
+```js
+const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+    context.log('Broadcasting to everyone');
+
+    const message = (req.query.message || (req.body && req.body.message));
+    
+    const restoreReferencesEndpoint = process.env.cloudRestoreEndpoint;
+    const broadcastingEndpoint = process.env.broadcastEndpoint;
+
+    const response = await fetch(restoreReferencesEndpoint, {
+        method: 'POST',
+        body: JSON.stringify({}),
+        headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.status === 200) {
+        const body = await response.json();
+        const references = body.references;
+
+        await fetch(broadcastingEndpoint, {
+            method: 'POST',
+            body: JSON.stringify({
+                message,
+                references,
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        context.res = {
+            status: 202,
+            body: "Broadcasting complete.",
+        };
+
+    } else {
+        context.res = {
+            status: 404,
+            body: "No conversation reference found for broadcasting.",
+        };
+    }
+    context.done();
+};
+```
+
+Note that we are using two parameters -- `cloudRestoreEndpoint` and `broadcastEndpoint` -- from the environment.
+
+2. Add the url of your bot's broadcasting endpoint and the url for the `getConversationReferences` function to the application settings for your Azure Function app:
+```js
+broadcastEndpoint --> "https://<YOUR_BOT_NAME>.azurewebsites.net/api/broadcast"
+cloudRestoreEndpoint --> "https://<AZURE_FUNCTION_APP_NAME>.azurewebsites.net/api/getConversationReferences?code=<FUNCTION_ACCESS_KEY>"
+```
+
+3. Use postman (or similar) service to trigger your broadcasting function.
+
+
+
+
