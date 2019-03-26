@@ -187,13 +187,13 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 
 `MapProactiveEndpoint` application builder extension method is taking string parameter on the input which defines address four our proactive endpoint. In our case we placed this value to AppSettings file and we read it using`Configuration` object. The value might be for instance *'api/proactive'*
 
-**Note:** We have opened new endpoint for our application, which is not secured. In production scenario you would want to introduce security layer, e.g. using shared secrets.
+**Note:** We have opened new endpoint for our application, which is not secured. In production scenario you should introduce security layer, e.g. using shared secrets.
 
 **Alternative way to register new endpoint:** Another approach how to define new endpoint would be to use *mvc* middleware and implement request processing and initiate proactive message thru controller action. This approach introduces slight overkill in form of using the whole mvc middleware stack just to open one endpoint, on the other hand it provides quite simple way how to secure the endpoint using supported security providers. In this sample we wanted to  stick with the approach for defining /api/message endpoint used by Bot Framework and so we created our own application builder extension method and piece of middleware.
 
 ### Store the Conversation Reference
 
-Once we have logic to send proactive message, we need logic for storing conversation reference, which  is needed for reopening of conversation with user, e.i. sending proactive message. In this sample we are storing conversation reference in memory as conversation state. In real world scenario you would want have external store and backend reading from this store, which is responsible for deciding when, with what content and to whom the proactive messages will be sent.
+Once we have logic to send proactive message, we need logic for storing conversation reference, which  is needed for reopening of conversation with user, e.i. sending proactive message. In this sample we are storing conversation reference in memory as conversation state. In real world scenario you should have external store and backend reading from this store, which is responsible for deciding when, with what content and to whom the proactive messages will be sent.
 
 To store Conversation Reference within conversation state we needed to create new state accessor. We added following lines of code to class which defines state accessors (in our case `BotBuilder_ProactiveMessagingAccessors`):
 
@@ -245,7 +245,7 @@ else
 
 ### Invoke the Proactive Endpoint
 
-Proactive endpoint can be hit by any service at this point as long as it sends a conversation reference and message content in the request  body. That means that for example it can be your backend which already takes care of invoking notification within mobile application, sends newsletter emails etc. However for this basic implementation the endpoint is configured to be hit  by the bot itself. To complete the flow, you'll need to retrieve the  stored conversation reference from conversation state and make a post request to the  proactive endpoint with a body containing the reference and the  message content to be sent (message text, attachments (cards) and suggested actions). Our bot is sending this in OnTurnAsync handler, in case incoming message is starting with word "proactive". For sake of demonstration besides text message we included also hero cards and suggested actions which we want to display within proactive message.
+Proactive endpoint can be hit by any service at this point as long as it sends a conversation reference and message content in the request  body. It can be your backend which already takes care of invoking notification within mobile application, sends newsletter emails etc. However, for this basic implementation the endpoint is configured to be hit  by the bot itself. To complete the flow, you'll need to retrieve the  stored conversation reference from conversation state and make a post request to the  proactive endpoint with a body containing the reference and the  message content to be sent (message text, attachments (cards) and suggested actions). Our bot is sending this in OnTurnAsync handler, in case incoming message is starting with word "proactive". For sake of demonstration besides text message we have included also hero cards and suggested actions which we want to display within proactive message.
 
 ```c#
 if (turnContext.Activity.Type == ActivityTypes.Message)
