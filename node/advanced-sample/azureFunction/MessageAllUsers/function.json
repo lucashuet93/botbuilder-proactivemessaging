@@ -1,0 +1,29 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ]
+    },
+    {
+      "name": "allDocuments",
+      "type": "cosmosDB",
+      "direction": "in",
+      "databaseName": "YOUR_DATABASE",
+      "collectionName": "YOUR_COLLECTION",
+      "sqlQuery": "SELECT * FROM c",
+      "connectionStringSetting": "AzureWebJobsDocumentDBConnectionString"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ]
+}
