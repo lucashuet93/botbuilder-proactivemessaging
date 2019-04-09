@@ -163,7 +163,7 @@ server.post('/api/proactive', async (req, res) => {
 
 For this advanced implementation, the reference is stored in a Cosmos DB SQL API. Before implementing code to interact with Cosmos DB, provision a new empty Cosmos DB instance on Azure with the Core(SQL) API using the [Microsoft Docs](https://docs.microsoft.com/en-us/azure/cosmos-db/create-sql-api-nodejs#create-a-database-account)
 
-Create a file called cosmos-config.json at the base of the bot folder and add the following properties taken from the Cosmos DB instance on the Azure Portal:
+Open `cosmos-config.json` and replce the placeholder properties with those from your Cosmos DB instance:
 
 ```javascript
 {
