@@ -1,6 +1,6 @@
 # Proactive Messaging in Node Bot Framework v4 SDK
 
-This sub repository contains code sample and instructions which demonstrate basic and advanced implementation of proactive messaging in Node. 
+This sub repository contains code sample and instructions which demonstrate basic and advanced implementation of proactive messaging in Node.
 
 1. [Basic Implementation](#basic)
 2. [Advanced Implementation](#advanced)
@@ -15,6 +15,31 @@ At its most basic level, sending proactive messages requires a few additions to 
 - A mechanism to retrieve the stored conversation reference and invoke the proactive message endpoint
 
 ***The bot project inside the /node/basic-sample directory fully implements the following instructions.***
+
+### Getting Started
+
+Navigate to ```/basic-sample/bot/``` and create a .env file with the following contents:
+
+```
+botFilePath="./basic.bot"
+botFileSecret=""
+```
+
+The .env file replaces the use of the .bot file, [which is now deprecated](https://docs.microsoft.com/en-us/azure/bot-service/bot-file-basics?view=azure-bot-service-4.0&tabs=js):
+
+> Prior to the Bot Framework SDK 4.3 release, we offered the .bot file as a mechanism to manage resources. However, going forward we recommend that you use appsettings.json or .env file for managing these resources. Bots that use .bot file will continue to work for now even though the .bot file has been ***deprecated***. If you've been using a .bot file to manage resources, follow the steps that apply to migrate the settings.
+
+In the same directory, run ```npm install``` and then ```npm run start```.
+
+### Testing the Bot
+
+Now that the bot is running, test it using the [Bot Framework Emulator](https://github.com/Microsoft/BotFramework-Emulator/releases/tag/v4.3.3):
+
+* In the "Welcome" tab, click "Open Bot"
+* Under "Bot URL or .bot file location," add the endpoint URL "http://localhost:3978/api/messages"
+* Click "Connect"
+
+Chat with the bot in the emulator. To initialize a proactive message, send the bot text that begins with "proactive - " and be careful to note that spacing matters.
 
 ### Create the Proactive Endpoint
 
@@ -122,7 +147,7 @@ if (turnContext.activity.text.includes('proactive - ')) {
 <a name="advanced"></a>
 # Advanced Implementation
 
-In a more advanced implementaion, the goal is to trigger the proactive message outside of the bot. Triggering the /api/proactive endpoint created from earlier could be achieved through via an external web service, eventing mechanism, or a simple REST call. 
+In a more advanced implementaion, the goal is to trigger the proactive message outside of the bot. Triggering the /api/proactive endpoint created from earlier could be achieved through via an external web service, eventing mechanism, or a simple REST call.
 
 In this example, the service architecture must be capable of sending notifications to specific users as well as broadcasting to the entire subset of users that have interacted with the bot. In order to implement this flow, a few requirements must be met:
 
@@ -135,7 +160,7 @@ The bot will be configured to store conversation references in Cosmos DB and han
 1. The bot stores the conversation reference in Cosmos DB when a user starts a conversation with the bot on a new channel.
 2. The Azure Function accepts a request with a body containing a message property.
 3. The Azure Function retrieves a subset of the conversation references stored in CosmosDB and posts the references and message to the bot's proactive endpoint.
-4. The bot proactively messages each conversation for which references were sent. 
+4. The bot proactively messages each conversation for which references were sent.
 
 It is important to note that any services could be used as alternatives to CosmosDB for storage and Azure Functions for endpoint triggering.
 
@@ -233,7 +258,7 @@ In order to use the CosmosDB input binding, navigate into your function app's fo
 
 ```func extensions install -p Microsoft.Azure.WebJobs.Extensions.CosmosDB -v 3.0.0```
 
-Before you can create the binding, the function must have access to its connection string via an environment variable. Add the following environment variable to the ```Values``` section of the local.settings.json file. 
+Before you can create the binding, the function must have access to its connection string via an environment variable. Add the following environment variable to the ```Values``` section of the local.settings.json file.
 
 ```"AzureWebJobsDocumentDBConnectionString": "YOUR_COSMOS_CONNECTION_STRING"```
 
@@ -262,7 +287,7 @@ let conversationReferences = context.bindings.allDocuments;
 
 ### Post the Stored Conversation Reference to the Proactive Endpoint
 
-Before writing the code to post the references to the bot, the function will need access to the bot's proactive endpoint. The endpoint should be the deployed bot's url, or an ngrok tunnel can be created to generate a publicly accessible endpoint if the bot has not yet been deployed. For more info on ngrok tunnels to localhost, visit [ngrok](https://ngrok.com/). Add the following environment variable to the ```Values``` section of the local.settings.json file: 
+Before writing the code to post the references to the bot, the function will need access to the bot's proactive endpoint. The endpoint should be the deployed bot's url, or an ngrok tunnel can be created to generate a publicly accessible endpoint if the bot has not yet been deployed. For more info on ngrok tunnels to localhost, visit [ngrok](https://ngrok.com/). Add the following environment variable to the ```Values``` section of the local.settings.json file:
 
 ```"ProactiveEndpoint": "YOUR_NGROK_ENDPOINT"```
 
@@ -313,4 +338,4 @@ The above method uses the fetch npm package to make the post request, but any ht
 
 ### Complete the Flow
 
-Run the bot and Azure function simultaneously, then make a POST request to one of the Azure Function's endpoints to proactively broadcast a message or send the message to a specific user. 
+Run the bot and Azure function simultaneously, then make a POST request to one of the Azure Function's endpoints to proactively broadcast a message or send the message to a specific user.
