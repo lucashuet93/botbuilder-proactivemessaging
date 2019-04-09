@@ -91,7 +91,14 @@ server.post('/api/proactive', async (req, res) => {
     let reference = req.body.reference;
     let message = req.body.message;
     await adapter.continueConversation(reference, async (turnContext) => {
+        // Wait two seconds
+        await timeout(2000);
         await turnContext.sendActivity(message);
     });
     res.send(200);
 });
+
+// Promisified timeout helper
+const timeout = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
