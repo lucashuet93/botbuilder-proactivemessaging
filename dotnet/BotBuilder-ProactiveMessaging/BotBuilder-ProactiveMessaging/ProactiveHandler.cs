@@ -32,6 +32,7 @@ namespace BotBuilder_ProactiveMessaging
             var request = httpContext.Request;
             var response = httpContext.Response;
 
+
             //TODO add security layer to request validation
 
             if (request.Method != HttpMethods.Post)
@@ -76,6 +77,9 @@ namespace BotBuilder_ProactiveMessaging
             {
                 try
                 {
+                    //simulate delay
+                    await Task.Delay(5000);
+
                     Activity proactiveMessage = turnContext.Activity.CreateReply(); ;
 
                     if (req.Attachments != null)
