@@ -93,4 +93,5 @@ server.post('/api/proactive', async (req, res) => {
     await adapter.continueConversation(reference, async (turnContext) => {
         await turnContext.sendActivity(message);
     });
+    res.send(200);
 });
