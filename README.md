@@ -18,7 +18,7 @@ Below we briefly describe two main approaches how to implement proactive messagi
 
 
 
-![Proactive Messages using Direct Line](img\proactive_directline.png)
+![Proactive Messages using Direct Line](https://github.com/lucashuet93/botbuilder-proactivemessaging/blob/master/img/proactive_directline.png)
 
 <center><i>Fig. 1: Proactive messaging flow using Direct Line</i></center>
 
@@ -26,7 +26,7 @@ Below we briefly describe two main approaches how to implement proactive messagi
 
    When implementing proactive messaging you might want to split logic and code for processing reactive messages and request for proactive messages. This may be achieved by introducing of second endpoint to your bot backend, which will be responsible for listening to proactive message requests. This approach takes away need of setting up the Direct Line channel, however it leaves all the responsibility for securing of communication between external system and your bot backend on your shoulders. As in this case you are exposing new endpoint/new API, you should secure it (especially in production scenario). Simplest way how to achieve it, is to use shared secret or API key. Below we are stating architecture diagram describing flow to initiate proactive messages using standalone endpoint.
 
-   ![Proactive Messages using Standalone Endpoint](img\proactive_separeteendpoint.png)
+   ![Proactive Messages using Standalone Endpoint](https://github.com/lucashuet93/botbuilder-proactivemessaging/blob/master/img/proactive_separeteendpoint.png)
 
    <center> <i> Fig. 2: Proactive messaging flow using Standalone endpoint </i> </center>
 
