@@ -1,0 +1,28 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "conversationReferences",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "connectionStringSetting": "proactive-bot-ts-db_DOCUMENTDB",
+      "direction": "in",
+      "sqlQuery": "SELECT * FROM d"
+    }
+  ],
+  "scriptFile": "..\\dist\\getConversationReferences\\index.js"
+}

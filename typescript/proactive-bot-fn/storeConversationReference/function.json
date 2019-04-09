@@ -1,0 +1,29 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "cosmosDB",
+      "name": "inputConversationReference",
+      "databaseName": "ConversationsDB",
+      "collectionName": "ConversationReferences",
+      "createIfNotExists": false,
+      "connectionStringSetting": "proactive-bot-ts-db_DOCUMENTDB",
+      "direction": "out",
+      "partitionKey": "clientId"
+    }
+  ],
+  "scriptFile": "..\\dist\\storeConversationReference\\index.js"
+}
