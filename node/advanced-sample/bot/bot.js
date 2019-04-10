@@ -2,19 +2,11 @@
 // Licensed under the MIT License.
 
 const { ActivityTypes, TurnContext } = require('botbuilder');
-const config = require('./cosmos-config');
-const CosmosClient = require('@azure/cosmos').CosmosClient;
 
 class MyBot {
-    constructor() {
-        this.cosmosClient = this.createCosmosClient();
-    }
-
-    createCosmosClient() {
-        const masterKey = config.AUTH_KEY;
-        const endpoint = config.SERVICE_ENDPOINT;
-        const cosmosClient = new CosmosClient({ endpoint: endpoint, auth: { masterKey: masterKey } });
-        return cosmosClient;
+    constructor(cosmosClient, cosmosConfig) {
+        this.cosmosClient = cosmosClient;
+        this.cosmosConfig = cosmosConfig;
     }
 
     async onTurn(turnContext) {
@@ -39,7 +31,7 @@ class MyBot {
         const reference = TurnContext.getConversationReference(turnContext.activity);
         // store reference in cosmosDB
         try {
-            await this.cosmosClient.database(config.DATABASE).container(config.COLLECTION).items.create(reference);
+            await this.cosmosClient.database(this.cosmosConfig.database).container(this.cosmosConfig.collection).items.create(reference);
         } catch (err) {
             turnContext.sendActivity(`Write failed: ${err}`);
             console.log(err);
