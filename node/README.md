@@ -1,6 +1,6 @@
 # Proactive Messaging in Node Bot Framework v4 SDK
 
-This sub repository contains code sample and instructions which demonstrate basic and advanced implementation of proactive messaging in Node.
+This sub-repository contains samples and instructions that demonstrate a basic and an advanced implementation of proactive messaging in Node.
 
 1. [Basic Implementation](#basic)
 2. [Advanced Implementation](#advanced)
@@ -16,7 +16,7 @@ At its most basic level, sending proactive messages requires a few additions to 
 
 ***The bot project inside the /node/basic-sample directory fully implements the following instructions.***
 
-### Getting Started
+### Running the Basic Sample
 
 Navigate to ```/basic-sample/bot/``` and create a .env file with the following contents:
 
@@ -41,11 +41,15 @@ Now that the bot is running, test it using the [Bot Framework Emulator](https://
 
 Chat with the bot in the emulator. To initialize a proactive message, send the bot text that begins with "proactive - " and be careful to note that spacing matters.
 
-### Create the Proactive Endpoint
+## How the Basic Sample Works
 
-The bot will need to accept requests on a different endpoint than /api/messages and will need to message the user there, though it is outside the scope of the bot's onTurn handler. The Bot Framework enables this functionality through the ```continueConversation()``` method on the BotFrameworkAdapter class. ```continueConversation()``` accepts an instance of the ConversationReference class, so requests to the endpoint must contain a stored instance of a conversation reference object.
+The basic sample implements a proactive endpoint, saving conversation reference and posting against the endpoint using the saved conversation reference. Effectively, the bot is telling itself to send a proactive message. Real-world applications with proactive messaging would instead involve an external service (e.g. Azure Functions) that would "tell" the bot to send some proactive messages. See the advanced sample for an example that does this.
 
-The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing a conversation reference and message:
+### Implementing the Proactive Endpoint
+
+As discussed in the top-level README of this wiki, we are exposing an additional endpoint (/api/proactive) to receive commands to send proactive messages. This endpoint lives on the same server as our bot's endpoint (api/messages), and uses the bot adapter to proactively reach out to users. We're able to do this by using the ```continueConversation()``` method on the BotFrameworkAdapter class. ```continueConversation()``` accepts an instance of the ConversationReference class, so requests to the endpoint must contain a stored instance of a conversation reference object.
+
+The following code has been added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing a conversation reference and message:
 
 ```javascript
 server.post('/api/proactive', async (req, res) => {
@@ -64,11 +68,11 @@ In order for the restify server to handle request body objects, the server must 
 server.use(restify.plugins.bodyParser());
 ```
 
-### Store the Conversation Reference
+### Storing the Conversation Reference
 
 Conversation references can be retrieved during any conversation turn using the turnContext object. The TurnContext class contains a ```getConversationReference()``` method, which accepts an instance of the Activity class, accessible on any turnContext instance.
 
-For basic implementation, the reference is stored in memory on runtime as conversation state. Instantiate conversation state in the index.js file and pass it into the bot's constructor:
+For the basic implementation, the reference is stored in memory on runtime as conversation state. Instantiate conversation state in the index.js file and pass it into the bot's constructor:
 
 ```javascript
 // Introduce state
@@ -111,9 +115,9 @@ Make sure to save the conversation state after the method call:
 await this.conversationState.saveChanges(turnContext);
 ```
 
-### Post the Stored Conversation Reference to the Proactive Endpoint
+### Posting the Stored Conversation Reference to the Proactive Endpoint
 
-The /api/proactive endpoint can be hit by any service at this point so long as it sends a conversation reference and message in the request body, but for basic implementation the endpoint is configured to be hit by the bot itself. To complete the flow, you'll need to retrieve the stored conversation reference and make a post request to the /api/proactive endpoint with a body containing the reference and the message to send. The following method demonstrates this functionality:
+The /api/proactive endpoint can be hit by any service, so long as it sends a conversation reference and message in the request body. For the basic sample, the endpoint is configured to be hit by the bot itself. To complete the flow, you'll need to retrieve the stored conversation reference and make a post request against the /api/proactive endpoint with a body containing the reference and the message to send. The following method demonstrates this functionality:
 
 ```javascript
 async triggerProactiveMessage(turnContext, message) {
@@ -147,9 +151,76 @@ if (turnContext.activity.text.includes('proactive - ')) {
 <a name="advanced"></a>
 # Advanced Implementation
 
-In a more advanced implementaion, the goal is to trigger the proactive message outside of the bot. Triggering the /api/proactive endpoint created from earlier could be achieved through via an external web service, eventing mechanism, or a simple REST call.
+## Running the Advanced Sample
 
-In this example, the service architecture must be capable of sending notifications to specific users as well as broadcasting to the entire subset of users that have interacted with the bot. In order to implement this flow, a few requirements must be met:
+![Advanced Sample GIF](./images/ProactiveMessage.gif)
+
+### Download Dependencies
+
+1. Download the Azure Functions core tools npm package: `npm azure-functions-core-tools -g`.
+2. Navigate to the `node/advanced-sample` directory
+3. Navigate into the `bot` project and run `npm i`
+4. Navigate into the `azureFunction` project and run `npm i`
+5. While in the Azure Functions project, download the CosmosDB functions binding: `"func extensions install --package Microsoft.Azure.WebJobs.Extensions.CosmosDB --version 3.0.0"`
+6. If using VS Code, download the Azure Functions Extension from the marketplace:
+    ![Azure Function Extension](./images/AzureFunctionsExtension.JPG)
+7. Download [ngrok](https://ngrok.com/) to allow us to run our bot locally and test it in public
+
+### Create a Cosmos DB Database
+
+1. Open the Azure portal and click the plus sign to create a new resource
+2. Search for Cosmos DB and click create
+3. Specify the Subscription, Account Name and Location in which you'd like to deploy your database. Leave other fields untouched.
+4. Navigate through menus and click "Create"
+5. Once your Cosmos account has been created, Click add collection
+6. Create new database, collection and Partition Key (see example):
+    ![Azure Function Extension](./images/CosmosConfiguration.JPG)
+7. Click the "Keys" icon and make note of your URI, Primary Key and Primary Connection String (these will be used in the next step)
+
+### Running your Bot
+For the sake of demonstration, we'll run our bot locally.
+
+1. Navigate to your bot directory
+2. Update your `cosmos-config.json` with your Cosmos configuration
+3. Run your bot using `npm run start`. It will run on `http://localhost:3978/api/messages`
+4. Configure ngrok to create a public endpoint that points to your local endpoint: `ngrok http 3978`
+5. Test your bot using the Bot Framework Emulator
+    - Click File -> Open Bot
+    - Enter your ngrok url + /api/message (e.g. "http://3b680a02.ngrok.io/api/messages")
+    - Send your bot a message, validating that it echoes a response
+6. Validate that your Cosmos DB is persisting user addresses:
+    - Navigate to your Cosmos Account in the Azure portal and open "Data Explorer"
+    - Open your collection, click documents and observe the user address(es) that the bot persisted:
+    ![Azure Function Extension](./images/CosmosDataExplorer.JPG)
+
+### Create Azure Function
+
+Now we need to deploy our Azure Function, which will query our Cosmos instance and post against our bot's proactive endpoint to tell it to send proactive messages.
+
+1. Open Azure Icon in VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code.
+2. In the Functions Menu, navigate to the subscription in which you want to deploy your function
+3. Click the directory icon to create a new Functions project
+4. Navigate back to the `advanced-sample`
+5. For each function (`MessageAllUsers` and `MessageSpecificUser`) update the `function.json` files with the appropriate `databaseName` and `collectionName`:
+    ```js
+        "databaseName": "proactivedb",
+        "collectionName": "useraddresses",
+    ```
+6. Right click the `azureFunction` directory, then click "Deploy to Function App"
+7. Open your Function in the Azure portal
+8. Click the application settings link
+9. Add two new application settings: `AzureWebJobsDocumentDBConnectionString` and `ProactiveEndpoint` with your Cosmos connection string and ngrok endpoint respectively. **Note**: These keys can also be seen in the function's `local.settings.json`. To test your function locally, you'd want to add the right values here as well.
+10. Open the `MessageAllUsers` function and open the test panel on the right side
+11. Create a POST request against your function, with a JSON request body with a `message` property:
+    ![Azure Function Extension](./images/TestAzureFunction.JPG)
+12. Click Run and observe your bot sending a proactive message!
+
+
+## How the Advanced Sample Works
+
+In a real-world implementaion, the goal is to trigger the proactive message outside of the bot. Effectively, an external service (e.g. a flight booking notification system) should be able to trigger the bot to send users an update (e.g. "We've found a flight that may be interesting to you!"). Triggering the /api/proactive endpoint created from earlier can be achieved through via an external web service, eventing mechanism, or a simple REST call.
+
+In this example, the service architecture is capable of sending notifications to specific users as well as broadcasting to the entire subset of users that have interacted with the bot. In order to implement this flow, a few things were added:
 
 - An updated proactive endpoint capable of broadcasting
 - A database to store conversation references (CosmosDB)
