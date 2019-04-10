@@ -21,8 +21,8 @@ At its most basic level, sending proactive messages requires a few additions to 
 Navigate to ```/basic-sample/bot/``` and create a .env file with the following contents:
 
 ```
-botFilePath="./basic.bot"
-botFileSecret=""
+microsoftAppID=""
+microsoftAppPassword=""
 ```
 
 The .env file replaces the use of the .bot file, [which is now deprecated](https://docs.microsoft.com/en-us/azure/bot-service/bot-file-basics?view=azure-bot-service-4.0&tabs=js):
