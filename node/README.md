@@ -1,6 +1,6 @@
 # Proactive Messaging in Node Bot Framework v4 SDK
 
-This sub repository contains code sample and instructions which demonstrate basic and advanced implementation of proactive messaging in Node.
+This sub-repository contains samples and instructions that demonstrate a basic and an advanced implementation of proactive messaging in Node.
 
 1. [Basic Implementation](#basic)
 2. [Advanced Implementation](#advanced)
@@ -43,7 +43,7 @@ Chat with the bot in the emulator. To initialize a proactive message, send the b
 
 ## How the Basic Sample Works
 
-The basic sample works by implementing a proactive endpoint, saving conversation reference and posting against the endpoint using the saved conversation reference. Effectively, the bot is telling itself to send a proactive message. Real-world applications of proactive messaging would instead involve an external service (e.g. Azure Functions) that would "tell" the bot to send some proactive messages. See advanced sample for an example that does this. 
+The basic sample implements a proactive endpoint, saving conversation reference and posting against the endpoint using the saved conversation reference. Effectively, the bot is telling itself to send a proactive message. Real-world applications with proactive messaging would instead involve an external service (e.g. Azure Functions) that would "tell" the bot to send some proactive messages. See the advanced sample for an example that does this.
 
 ### Implementing the Proactive Endpoint
 
@@ -170,7 +170,7 @@ if (turnContext.activity.text.includes('proactive - ')) {
 
 1. Open the Azure portal and click the plus sign to create a new resource
 2. Search for Cosmos DB and click create
-3. Specify the Subscription, Account Name and Location in which you'd like to deploy your database. Leave other fields untouched. 
+3. Specify the Subscription, Account Name and Location in which you'd like to deploy your database. Leave other fields untouched.
 4. Navigate through menus and click "Create"
 5. Once your Cosmos account has been created, Click add collection
 6. Create new database, collection and Partition Key (see example):
@@ -197,7 +197,7 @@ For the sake of demonstration, we'll run our bot locally.
 
 Now we need to deploy our Azure Function, which will query our Cosmos instance and post against our bot's proactive endpoint to tell it to send proactive messages.
 
-1. Open Azure Icon in VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code. 
+1. Open Azure Icon in VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code.
 2. In the Functions Menu, navigate to the subscription in which you want to deploy your function
 3. Click the directory icon to create a new Functions project
 4. Navigate back to the `advanced-sample`
@@ -209,7 +209,7 @@ Now we need to deploy our Azure Function, which will query our Cosmos instance a
 6. Right click the `azureFunction` directory, then click "Deploy to Function App"
 7. Open your Function in the Azure portal
 8. Click the application settings link
-9. Add two new application settings: `AzureWebJobsDocumentDBConnectionString` and `ProactiveEndpoint` with your Cosmos connection string and ngrok endpoint respectively. **Note**: These keys can also be seen in the function's `local.settings.json`. To test your function locally, you'd want to add the right values here as well. 
+9. Add two new application settings: `AzureWebJobsDocumentDBConnectionString` and `ProactiveEndpoint` with your Cosmos connection string and ngrok endpoint respectively. **Note**: These keys can also be seen in the function's `local.settings.json`. To test your function locally, you'd want to add the right values here as well.
 10. Open the `MessageAllUsers` function and open the test panel on the right side
 11. Create a POST request against your function, with a JSON request body with a `message` property:
     ![Azure Function Extension](./images/TestAzureFunction.JPG)
