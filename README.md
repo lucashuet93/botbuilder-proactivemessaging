@@ -1,5 +1,7 @@
 # Proactive Messaging
 
+![ProactiveMessaging GIF](/node/images/ProactiveMessage.gif)
+
 When developers build bots they tend to focus on the *reactive* case - the bot receives a message, processes it, and sends something to the user in response. As such, the botbuilder SDK is optimized to handle this case. However, there is often value in having the bot reach out to the user in a proactive way. There might be scenarios when the bot should send users a price alert, act on a timed reminder, inform users about an order status change, etc. To implement this functionality, some mechanism must allow the bot to message a user *proactively*.
 
 When building the proactive messaging feature for a Bot Framework based bot, there are two different implementation and architecture approaches. Both approaches need to store a **conversation reference**. A conversation reference is a set of properties that is used by the Bot Framework. The set uniquely identifies a specific conversation for a specific user, or users. In production scenarios, this conversation reference should be stored in a separate data store (database) and should be linked to an existing user's identity.
