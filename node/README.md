@@ -197,7 +197,7 @@ For the sake of demonstration, we'll run our bot locally.
 
 Now we need to deploy our Azure Function, which will query our Cosmos instance and post against our bot's proactive endpoint to tell it to send proactive messages.
 
-1. Open Azure Icon in Activity Bar and authenticate against your Azure Subscription
+1. Open Azure Icon in VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code. 
 2. In the Functions Menu, navigate to the subscription in which you want to deploy your function
 3. Click the directory icon to create a new Functions project
 4. Navigate back to the `advanced-sample`
