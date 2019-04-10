@@ -41,11 +41,13 @@ Now that the bot is running, test it using the [Bot Framework Emulator](https://
 
 Chat with the bot in the emulator. To initialize a proactive message, send the bot text that begins with "proactive - " and be careful to note that spacing matters.
 
-### Create the Proactive Endpoint
+## How the Basic Sample Works
 
-The bot will need to accept requests on a different endpoint than /api/messages and will need to message the user there, though it is outside the scope of the bot's onTurn handler. The Bot Framework enables this functionality through the ```continueConversation()``` method on the BotFrameworkAdapter class. ```continueConversation()``` accepts an instance of the ConversationReference class, so requests to the endpoint must contain a stored instance of a conversation reference object.
+### Implementing the Proactive Endpoint
 
-The following code should be added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing a conversation reference and message:
+As discussed in the top-level README of this wiki, we are exposing an additional endpoint (/api/proactive) to receive commands to send proactive messages. This endpoint lives on the same server as our bot's endpoint (api/messages), and uses the bot adapter to proactively reach out to users. We're able to do this by using the ```continueConversation()``` method on the BotFrameworkAdapter class. ```continueConversation()``` accepts an instance of the ConversationReference class, so requests to the endpoint must contain a stored instance of a conversation reference object.
+
+The following code has been added to the index.js file, which creates an /api/proactive endpoint that expects a request body containing a conversation reference and message:
 
 ```javascript
 server.post('/api/proactive', async (req, res) => {
@@ -64,11 +66,11 @@ In order for the restify server to handle request body objects, the server must 
 server.use(restify.plugins.bodyParser());
 ```
 
-### Store the Conversation Reference
+### Storing the Conversation Reference
 
 Conversation references can be retrieved during any conversation turn using the turnContext object. The TurnContext class contains a ```getConversationReference()``` method, which accepts an instance of the Activity class, accessible on any turnContext instance.
 
-For basic implementation, the reference is stored in memory on runtime as conversation state. Instantiate conversation state in the index.js file and pass it into the bot's constructor:
+For the basic implementation, the reference is stored in memory on runtime as conversation state. Instantiate conversation state in the index.js file and pass it into the bot's constructor:
 
 ```javascript
 // Introduce state
@@ -111,9 +113,9 @@ Make sure to save the conversation state after the method call:
 await this.conversationState.saveChanges(turnContext);
 ```
 
-### Post the Stored Conversation Reference to the Proactive Endpoint
+### Posting the Stored Conversation Reference to the Proactive Endpoint
 
-The /api/proactive endpoint can be hit by any service at this point so long as it sends a conversation reference and message in the request body, but for basic implementation the endpoint is configured to be hit by the bot itself. To complete the flow, you'll need to retrieve the stored conversation reference and make a post request to the /api/proactive endpoint with a body containing the reference and the message to send. The following method demonstrates this functionality:
+The /api/proactive endpoint can be hit by any service, so long as it sends a conversation reference and message in the request body. For the basic sample, the endpoint is configured to be hit by the bot itself. To complete the flow, you'll need to retrieve the stored conversation reference and make a post request against the /api/proactive endpoint with a body containing the reference and the message to send. The following method demonstrates this functionality:
 
 ```javascript
 async triggerProactiveMessage(turnContext, message) {
