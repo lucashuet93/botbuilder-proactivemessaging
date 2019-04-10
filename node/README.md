@@ -16,7 +16,7 @@ At its most basic level, sending proactive messages requires a few additions to 
 
 ***The bot project inside the /node/basic-sample directory fully implements the following instructions.***
 
-### Getting Started
+### Running the Basic Sample
 
 Navigate to ```/basic-sample/bot/``` and create a .env file with the following contents:
 
