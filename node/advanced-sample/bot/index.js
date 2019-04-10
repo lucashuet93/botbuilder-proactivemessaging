@@ -92,7 +92,9 @@ server.post('/api/proactive', async (req, res) => {
                 await turnContext.sendActivity(message);
             });
         } catch (err) {
+            res.send(400);
             console.log(err);
         }
     }
+    res.send(200);
 });
