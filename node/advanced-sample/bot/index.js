@@ -4,7 +4,6 @@
 const dotenv = require('dotenv');
 const path = require('path');
 const restify = require('restify');
-const config = require('./cosmos-config');
 const CosmosClient = require('@azure/cosmos').CosmosClient;
 
 // Import required bot services.
@@ -44,12 +43,15 @@ adapter.onTurnError = async (context, error) => {
 };
 
 const cosmosClient = new CosmosClient({
-  endpoint: config.SERVICE_ENDPOINT,
-  auth: { masterKey: config.AUTH_KEY }
+  endpoint: process.env.SERVICE_ENDPOINT,
+  auth: { masterKey: process.env.AUTH_KEY },
 });
 
 // Create the main dialog.
-const myBot = new MyBot(cosmosClient, { collection: config.COLLECTION, database: config.DATABASE });
+const myBot = new MyBot(cosmosClient, {
+  collection: process.env.COLLECTION,
+  database: process.env.DATABASE,
+});
 
 // Listen for incoming requests.
 server.post('/api/messages', (req, res) => {
