@@ -43,7 +43,7 @@ Chat with the bot in the emulator. To initialize a proactive message, send the b
 
 ## How the Basic Sample Works
 
-The basic sample works by implementing a proactive endpoint, saving conversation reference and posting against the endpoint using the saved conversation reference. Effectively, the bot is telling itself to send a proactive message. Real-world applications of proactive messaging would instead involve an external service (e.g. Azure Functions) that would "tell" the bot to send some proactive messages. See advanced sample for an example that does this. 
+The basic sample works by implementing a proactive endpoint, saving conversation reference and posting against the endpoint using the saved conversation reference. Effectively, the bot is telling itself to send a proactive message. Real-world applications of proactive messaging would instead involve an external service (e.g. Azure Functions) that would "tell" the bot to send some proactive messages. See advanced sample for an example that does this.
 
 ### Implementing the Proactive Endpoint
 
@@ -157,7 +157,7 @@ if (turnContext.activity.text.includes('proactive - ')) {
 
 ### Download Dependencies
 
-1. Download the Azure Functions core tools npm package: `npm azure-functions-core-tools -g`.
+1. Download the Azure Functions core tools npm package: `npm i azure-functions-core-tools -g`.
 2. Navigate to the `node/advanced-sample` directory
 3. Navigate into the `bot` project and run `npm i`
 4. Navigate into the `azureFunction` project and run `npm i`
@@ -170,12 +170,12 @@ if (turnContext.activity.text.includes('proactive - ')) {
 
 1. Open the Azure portal and click the plus sign to create a new resource
 2. Search for Cosmos DB and click create
-3. Specify the Subscription, Account Name and Location in which you'd like to deploy your database. Leave other fields untouched. 
+3. Specify the Subscription, Account Name and Location in which you'd like to deploy your database. Leave other fields untouched.
 4. Navigate through menus and click "Create"
 5. Once your Cosmos account has been created, Click add collection
 6. Create new database, collection and Partition Key (see example):
     ![Azure Function Extension](./images/CosmosConfiguration.JPG)
-7. Click the "Keys" icon and make note of your URI, Primary Key and Primary Connection String (these will be used in the next step)
+7. Click "Keys" under "Settings" in the overview blade. Make note of your URI, Primary Key and Primary Connection String (these will be used in the next step)
 
 ### Running your Bot
 For the sake of demonstration, we'll run our bot locally.
@@ -183,25 +183,25 @@ For the sake of demonstration, we'll run our bot locally.
 1. Navigate to your bot directory
 2. Update your `cosmos-config.json` with your Cosmos configuration
 3. Run your bot using `npm run start`. It will run on `http://localhost:3978/api/messages`
-4. Configure ngrok to create a public endpoint that points to your local endpoint: `ngrok http 3978`
+4. Configure ngrok to create a public endpoint that points to your local endpoint. Navigate to the directory where ngrok was installed and run `ngrok http 3978`
 5. Test your bot using the Bot Framework Emulator
     - Click File -> Open Bot
     - Enter your ngrok url + /api/message (e.g. "http://3b680a02.ngrok.io/api/messages")
     - Send your bot a message, validating that it echoes a response
 6. Validate that your Cosmos DB is persisting user addresses:
     - Navigate to your Cosmos Account in the Azure portal and open "Data Explorer"
-    - Open your collection, click documents and observe the user address(es) that the bot persisted:
+    - Open your collection, click "Documents" and observe the user address(es) that the bot persisted:
     ![Azure Function Extension](./images/CosmosDataExplorer.JPG)
 
 ### Create Azure Function
 
 Now we need to deploy our Azure Function, which will query our Cosmos instance and post against our bot's proactive endpoint to tell it to send proactive messages.
 
-1. Open Azure Icon in VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code. 
+1. Open the Azure Icon in the VS Code Activity Bar and authenticate against your Azure Subscription. **Note**: This icon should have been added after downloading the Azure Functions extension. If you don't see it, restart VS Code.
 2. In the Functions Menu, navigate to the subscription in which you want to deploy your function
-3. Click the directory icon to create a new Functions project
-4. Navigate back to the `advanced-sample`
-5. For each function (`MessageAllUsers` and `MessageSpecificUser`) update the `function.json` files with the appropriate `databaseName` and `collectionName`:
+3. Click the directory icon to "Create New Project..."
+4. Navigate back to the `advanced-sample` directory
+5. For each function (`MessageAllUsers` and `MessageSpecificUser`) update the `function.json` file with the appropriate `databaseName` and `collectionName`:
     ```js
         "databaseName": "proactivedb",
         "collectionName": "useraddresses",
@@ -209,10 +209,12 @@ Now we need to deploy our Azure Function, which will query our Cosmos instance a
 6. Right click the `azureFunction` directory, then click "Deploy to Function App"
 7. Open your Function in the Azure portal
 8. Click the application settings link
-9. Add two new application settings: `AzureWebJobsDocumentDBConnectionString` and `ProactiveEndpoint` with your Cosmos connection string and ngrok endpoint respectively. **Note**: These keys can also be seen in the function's `local.settings.json`. To test your function locally, you'd want to add the right values here as well. 
-10. Open the `MessageAllUsers` function and open the test panel on the right side
+9. Add two new application settings: `AzureWebJobsDocumentDBConnectionString` and `ProactiveEndpoint` with your Cosmos connection string and ngrok endpoint (that hits api/proactive) respectively. **Note**: These keys can also be seen in the function's `local.settings.json`. To test your function locally, you'd want to add the right values here as well.
+10. In Azure Portal, open the `MessageAllUsers` function and open the test panel on the right side
 11. Create a POST request against your function, with a JSON request body with a `message` property:
+
     ![Azure Function Extension](./images/TestAzureFunction.JPG)
+
 12. Click Run and observe your bot sending a proactive message!
 
 
