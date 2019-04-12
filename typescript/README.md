@@ -302,6 +302,14 @@ Use might also decide to use any other services of you choice for these purposes
 
 **Important note**:
 - To use the binging with CosmosDB in Azure Functions you need the `Microsoft.Azure.WebJobs.Extensions.CosmosDB` extension installed for you app. The best way to get it is to add any new function to the app inside the Azure Portal and then to add an integration with CosmosDB through the interface.
+- Alternatively you can follow the following short guide:
+    - Install [`dotnet`](https://dotnet.microsoft.com/download).
+    - Run the command: `func extensions install` to install extensions (after you defined connections in the step 4).
+    - In the ADO add a bash script to init the project and add binary files for the CosmosDB extension (inside the Build pipeline):
+        ```bash
+        dotnet restore extensions.csproj
+        dotnet build extensions.csproj --output ./bin/
+        ```
 
 4. In the [`function.json`](./proactive-bot-fn/storeConversationReference/function.json) file (or manually through the Azure Portal) add the out-binding to connect with your CosmosDB database:
 
