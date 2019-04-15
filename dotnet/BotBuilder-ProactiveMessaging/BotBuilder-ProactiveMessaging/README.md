@@ -6,7 +6,7 @@ This bot has been created using [Microsoft Bot Framework][1],
 # Prerequisites
 - [Visual Studio 2017 15.7][2] or newer installed.
 - [.Net Core 2.1][3] or higher installed.  
-- [Bot Framework Emulator 4.1][6] or newer installed
+- [Bot Framework Emulator 4.3][6] or newer installed
 
 ## Azure Deployment Prerequisites
 This bot has prerequisite requirements in order to deploy the bot to Azure.
@@ -46,12 +46,15 @@ There are a small set of CLI tools that will automate the process of deploying t
 
 ## Visual Studio
 - Open BotBuilder_ProactiveMessaging.csproj in Visual Studio.
+- Open appsettings.json file and add your Microsoft AppId and Secret (proactive messaging won't work without AppId and Secret)
 - Run the project (press `F5` key).
 
 ## Testing the bot using Bot Framework Emulator
 [Microsoft Bot Framework Emulator][5] is a desktop application that allows bot 
 developers to test and debug their bots on localhost or running remotely through a tunnel.
 - Install the [Bot Framework emulator][6].
+
+Bot will initiate proactive messaging loop after receiving message which contains string *proactive*
 
 ## Connect to bot using Bot Framework Emulator **V4**
 - Launch the Bot Framework Emulator.
